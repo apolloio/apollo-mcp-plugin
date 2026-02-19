@@ -10,27 +10,32 @@ This plugin **automatically configures the Apollo MCP Server** when installed. N
 
 ---
 
-## ✅ Powerful Slash Commands
+## ✅ Powerful Skills
 
-This plugin ships with a set of helpful commands:
+This plugin ships with high-value skills that chain multiple Apollo APIs into complete workflows:
 
-| Command | What it does |
+| Skill | What it does |
 |---|---|
-| `/apollo:enrich-lead` | Get a full contact profile (email, phone, title, company) from a name, company, or LinkedIn URL |
-| `/apollo:prospect` | Describe your ideal customer and get a table of enriched decision-maker leads |
-| `/apollo:sequence-load` | Find leads matching criteria and bulk-add them to an Apollo outreach sequence |
+| `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email — get a full contact card with email, phone, company intel, and next actions |
+| `/apollo:prospect` | Describe your ICP in plain English — get a ranked table of enriched decision-maker leads |
+| `/apollo:sequence-load` | Find leads, enrich them, and bulk-load into an outreach sequence — handles dedup and enrollment |
+| `/apollo:company-intel` | Full company intelligence brief — firmographics, org chart, hiring signals, and a strategic playbook |
 
 ### `/apollo:enrich-lead`
 
-Drop in a name, company, LinkedIn URL, or email — get back a complete contact card with email, phone, title, location, company details, and suggested next actions.
+Drop in a name, company, LinkedIn URL, or email — get back a complete contact card with email, phone, title, location, company details, and suggested next actions. Handles fuzzy lookups (e.g. "CEO of Figma") and falls back to search when exact match fails.
 
 ### `/apollo:prospect`
 
-Describe your ICP in plain English. The pipeline searches for matching companies, enriches firmographic data, finds decision makers, reveals contact info, and returns a ranked lead table.
+Describe your ICP in plain English. The pipeline searches for matching companies, bulk-enriches firmographic data, finds decision makers, reveals contact info via bulk enrichment, and returns a ranked lead table with ICP fit scores.
 
 ### `/apollo:sequence-load`
 
-Find contacts matching your targeting criteria, enrich them, and bulk-add them to an existing Apollo sequence. Handles deduplication and enrollment automatically.
+Find contacts matching your targeting criteria, enrich them, create them as contacts with deduplication, and bulk-add them to an existing Apollo sequence. Previews candidates before enrollment and shows a full summary after.
+
+### `/apollo:company-intel`
+
+The deepest skill. Provide any company name or domain and get a complete intelligence brief: firmographics, org chart mapped by seniority, department-level hiring signals from live job postings, and a strategic playbook with recommended entry points, multi-thread targets, and timing reads.
 
 ---
 
@@ -81,7 +86,9 @@ The Apollo MCP Server supports **OAuth**:
 
 Some operations consume [Apollo credits](https://docs.apollo.io/):
 
-- **People enrichment** (used by all three commands) costs 1 credit per person
+- **People enrichment** (used by all four skills) costs 1 credit per person
+- **Bulk enrichment** (`/apollo:prospect`, `/apollo:sequence-load`) consumes 1 credit per person in the batch
+- **Job postings** (`/apollo:company-intel`) may consume credits depending on your plan
 - The plugin will always warn you before consuming credits
 
 ---
