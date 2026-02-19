@@ -6,7 +6,7 @@
   },
   "plugins": [
     {
-      "name": "apollo-plugin",
+      "name": "apollo",
       "description": "One-click install for Apollo.io Skills using Apollo MCP Server",
       "source": {
         "source": "github",

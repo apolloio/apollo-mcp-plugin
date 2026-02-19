@@ -1,5 +1,5 @@
 {
-  "name": "Apollo",
+  "name": "apollo",
   "version": "0.1.0",
   "description": "Apollo.io Skills + MCP server packaged as a Claude Code and Cowork plugin.",
   "author": {
