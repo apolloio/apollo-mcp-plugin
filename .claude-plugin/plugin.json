@@ -1,0 +1,12 @@
+{
+  "name": "Apollo",
+  "version": "0.1.0",
+  "description": "Apollo.io Skills + MCP server packaged as a Claude Code and Cowork plugin.",
+  "author": {
+    "name": "Apollo.io",
+    "url": "https://docs.apollo.io/"
+  },
+  "repository": "https://github.com/apolloio/apollo-mcp-plugin",
+  "license": "MIT",
+  "keywords": ["apollo", "sales", "prospecting", "icp", "enrichment", "sequences"]
+}
