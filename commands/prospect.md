@@ -15,7 +15,7 @@ Extract structured filters from the natural language description:
 
 ## Step 2: Search for Companies
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_companies_search` with:
+Use `mcp__apollo__apollo_mixed_companies_search` with:
 - `q_organization_keyword_tags` for industry/vertical
 - `organization_num_employees_ranges` for company size
 - `organization_locations` for geography
@@ -23,19 +23,19 @@ Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_companies_search` with:
 
 ## Step 3: Enrich Top Companies
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_bulk_enrich` with domains from the top 10 companies.
+Use `mcp__apollo__apollo_organizations_bulk_enrich` with domains from the top 10 companies.
 This reveals revenue, funding, employee counts, and firmographic data. Use this to rank companies.
 
 ## Step 4: Find Decision Makers
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with:
+Use `mcp__apollo__apollo_mixed_people_api_search` with:
 - `person_titles` and `person_seniorities` from the ICP
 - `q_organization_domains_list` scoped to enriched companies
 - Request 10-25 results
 
 ## Step 5: Enrich Top Leads
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_people_match` on the best leads to reveal email and phone.
+Use `mcp__apollo__apollo_people_match` on the best leads to reveal email and phone.
 Warn the user that enrichment consumes Apollo credits before proceeding.
 
 ## Step 6: Present Results

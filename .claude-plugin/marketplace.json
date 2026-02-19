@@ -4,10 +4,13 @@
     "name": "Apollo.io",
     "url": "https://docs.apollo.io/"
   },
+  "metadata": {
+    "description": "Official Apollo.io plugin marketplace for Claude"
+  },
   "plugins": [
     {
       "name": "apollo",
-      "description": "One-click install for Apollo.io Skills using Apollo MCP Server",
+      "description": "Prospect, enrich leads, and load outreach sequences — one-click Apollo MCP server integration for Claude Code and Cowork.",
       "source": {
         "source": "github",
         "repo": "apolloio/apollo-mcp-plugin"

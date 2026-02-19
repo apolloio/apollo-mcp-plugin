@@ -16,7 +16,7 @@ From "$ARGUMENTS", extract whatever identifiers are available:
 
 ## Step 2: Enrich the Person
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_people_match` with all available identifiers:
+Use `mcp__apollo__apollo_people_match` with all available identifiers:
 - `first_name`, `last_name` if name provided
 - `domain` or `organization_name` if company provided
 - `linkedin_url` if LinkedIn provided
@@ -27,7 +27,7 @@ Warn the user this consumes 1 Apollo credit before calling.
 
 ## Step 3: Enrich Their Company
 
-If the person is found, also use `mcp__claude_ai_Apollo_MCP__apollo_organizations_enrich` on their company domain to add company context.
+If the person is found, also use `mcp__apollo__apollo_organizations_enrich` on their company domain to add company context.
 
 ## Step 4: Present the Profile
 
