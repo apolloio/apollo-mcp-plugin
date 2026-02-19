@@ -34,23 +34,33 @@ Find contacts matching your targeting criteria, enrich them, and bulk-add them t
 
 ---
 
-## 📦 Installation (Claude Code / Cowork)
+## 📦 Installation
 
-### 1. Add this plugin's marketplace
+### Cowork
 
-In Claude Code or Cowork, run:
+Click the link below to install in one step:
+
+[Install in Cowork](https://claude.ai/desktop/customize/plugins/new?marketplace=apolloio/apollo-mcp-plugin&plugin=apollo)
+
+Then restart Cowork to ensure the MCP server starts correctly.
+
+### Claude Code
+
+#### 1. Add this plugin's marketplace
+
+In Claude Code, run:
 
 ```
 /plugin marketplace add apolloio/apollo-mcp-plugin
 ```
 
-### 2. Install the plugin
+#### 2. Install the plugin
 
 ```
 /plugin install apollo@apollo-plugin-marketplace
 ```
 
-### 3. Restart Claude Code / Cowork
+#### 3. Restart Claude Code
 
 This ensures the MCP server starts correctly.
 
