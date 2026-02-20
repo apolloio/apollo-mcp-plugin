@@ -31,6 +31,7 @@ Describe your ICP in plain English. The pipeline searches for matching companies
 ### `/apollo:sequence-load`
 
 Find contacts matching your targeting criteria, enrich them, create them as contacts with deduplication, and bulk-add them to an existing Apollo sequence. Previews candidates before enrollment and shows a full summary after.
+
 ---
 
 ## 📦 Installation
