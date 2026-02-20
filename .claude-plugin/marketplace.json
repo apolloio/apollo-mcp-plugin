@@ -11,10 +11,7 @@
     {
       "name": "apollo",
       "description": "Prospect, enrich leads, and load outreach sequences — one-click Apollo MCP server integration for Claude Code and Cowork.",
-      "source": {
-        "source": "github",
-        "repo": "apolloio/apollo-mcp-plugin"
-      },
+      "source": "./",
       "homepage": "https://www.apollo.io/"
     }
   ]
