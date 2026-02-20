@@ -19,7 +19,6 @@ This plugin ships with high-value skills that chain multiple Apollo APIs into co
 | `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email — get a full contact card with email, phone, company intel, and next actions |
 | `/apollo:prospect` | Describe your ICP in plain English — get a ranked table of enriched decision-maker leads |
 | `/apollo:sequence-load` | Find leads, enrich them, and bulk-load into an outreach sequence — handles dedup and enrollment |
-| `/apollo:company-intel` | Full company intelligence brief — firmographics, org chart, hiring signals, and a strategic playbook |
 
 ### `/apollo:enrich-lead`
 
@@ -32,11 +31,6 @@ Describe your ICP in plain English. The pipeline searches for matching companies
 ### `/apollo:sequence-load`
 
 Find contacts matching your targeting criteria, enrich them, create them as contacts with deduplication, and bulk-add them to an existing Apollo sequence. Previews candidates before enrollment and shows a full summary after.
-
-### `/apollo:company-intel`
-
-The deepest skill. Provide any company name or domain and get a complete intelligence brief: firmographics, org chart mapped by seniority, department-level hiring signals from live job postings, and a strategic playbook with recommended entry points, multi-thread targets, and timing reads.
-
 ---
 
 ## 📦 Installation
@@ -88,7 +82,6 @@ Some operations consume [Apollo credits](https://docs.apollo.io/):
 
 - **People enrichment** (used by all four skills) costs 1 credit per person
 - **Bulk enrichment** (`/apollo:prospect`, `/apollo:sequence-load`) consumes 1 credit per person in the batch
-- **Job postings** (`/apollo:company-intel`) may consume credits depending on your plan
 - The plugin will always warn you before consuming credits
 
 ---
