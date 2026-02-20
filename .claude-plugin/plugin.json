@@ -4,10 +4,10 @@
   "description": "Prospect, enrich leads, and load outreach sequences with Apollo.io — one-click MCP server integration for Claude Code and Cowork.",
   "author": {
     "name": "Apollo.io",
-    "url": "https://docs.apollo.io/"
+    "url": "https://www.apollo.io/"
   },
   "repository": "https://github.com/apolloio/apollo-mcp-plugin",
-  "homepage": "https://docs.apollo.io/",
+  "homepage": "https://www.apollo.io/",
   "license": "MIT",
   "keywords": ["apollo", "sales", "prospecting", "icp", "enrichment", "sequences", "mcp"]
 }

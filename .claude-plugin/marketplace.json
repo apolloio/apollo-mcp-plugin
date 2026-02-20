@@ -2,7 +2,7 @@
   "name": "apollo-plugin-marketplace",
   "owner": {
     "name": "Apollo.io",
-    "url": "https://docs.apollo.io/"
+    "url": "https://www.apollo.io/"
   },
   "metadata": {
     "description": "Official Apollo.io plugin marketplace for Claude"
@@ -15,7 +15,7 @@
         "source": "github",
         "repo": "apolloio/apollo-mcp-plugin"
       },
-      "homepage": "https://docs.apollo.io/"
+      "homepage": "https://www.apollo.io/"
     }
   ]
 }
