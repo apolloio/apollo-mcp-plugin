@@ -24,6 +24,7 @@ High-value skills that chain multiple Apollo APIs into complete workflows:
 | `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email and get a full contact card with company context and next actions |
 | `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers |
 | `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment |
+| `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data |
 
 
 ### `/apollo:enrich-lead`
@@ -41,6 +42,11 @@ Output: ranked lead table with enriched decision-makers
 Best for: taking action on a list. <br>
 Input: targeting criteria + target sequence <br>
 Output: preview of candidates, enrichment + dedupe, then bulk enrollment into the sequence
+
+### `/apollo:analytics`
+Best for: answering performance questions without opening a dashboard. <br>
+Input: any question about emails, calls, meetings, tasks, opportunities, sequences, or conversation intelligence <br>
+Output: formatted tables with real Apollo data, broken down by rep, team, time, sequence, stage, or any other dimension
 
 
 Important: sequence enrollment may trigger outbound depending on your sequence settings and sending configuration.
@@ -135,6 +141,7 @@ Try these in Claude:
 - “Enrich this lead: [https://www.linkedin.com/in/…”](https://www.linkedin.com/in/%E2%80%A6%E2%80%9D)
 - “Find 25 VP Sales at SaaS companies (200-1000 employees) that raised funding in the last 6 months.”
 - “Load the top 10 enriched leads into my sequence called ‘Q1 Enterprise Outbound’ and show me a preview before enrolling.”
+- “Show me email and call performance by rep for this quarter, sorted by calls made.”
 
 ---
 
