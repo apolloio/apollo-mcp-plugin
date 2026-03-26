@@ -49,11 +49,12 @@ Key distinctions:
 - `num_meetings_held` = actually occurred
 
 **Tasks**
-`num_tasks`, `num_tasks_completed`, `num_tasks_scheduled`, `num_tasks_completed_on_time`, `percent_tasks_completed`, `percent_tasks_completed_on_time`, `overdue_tasks`, `unfinished_overdue_tasks`
+`num_tasks`, `num_tasks_completed`, `num_tasks_scheduled`, `num_tasks_completed_on_time`, `percent_tasks_completed`, `percent_tasks_completed_on_time`, `overdue_tasks`, `unfinished_overdue_tasks`, `percent_unfinished_overdue_tasks`
 
 Key distinctions:
 - `overdue_tasks` = all overdue including completed late
 - `unfinished_overdue_tasks` = still pending and overdue
+- `percent_unfinished_overdue_tasks` = share of scheduled tasks that are overdue and unfinished (vs `num_tasks_scheduled`)
 
 **Contacts & Accounts**
 `num_contacts`, `num_accounts`, `num_contacts_touched`, `num_accounts_touched`, `num_net_new_people`, `num_net_new_companies`, `num_contacts_with_job_change`
