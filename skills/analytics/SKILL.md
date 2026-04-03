@@ -129,8 +129,11 @@ If the user wants a cross-tab (e.g. "by rep AND by sequence", "broken down by st
 
 ### Filters
 
-- "my data" / "for me" / "my performance" → `filters: { user_id: ["current"] }`
+- "my data" / "for me" / "my performance" → `filters: { user_ids: ["current"] }`
+- Specific user by Apollo user ID → `filters: { user_ids: ["<user_id>"] }` (can combine: `["current", "user_id_1"]`)
 - "team" / no user mention → omit filters entirely (returns team-wide data)
+- Filter by team/subteam → `filters: { team_ids: ["<subteam_id>"] }`
+- Filter by sequence name → first call `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_search` to resolve the name to an ID, then pass `filters: { emailer_campaign_ids: ["<id>"] }`
 
 ---
 
