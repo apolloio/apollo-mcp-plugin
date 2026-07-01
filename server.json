@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.apolloio/mcp",
+  "description": "Official Apollo.io MCP server. Connect AI clients to Apollo's 275M+ contact and 73M+ company database for lead enrichment, prospecting, outreach sequence management, and sales analytics.",
+  "repository": {
+    "url": "https://github.com/apolloio/apollo-mcp-plugin",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@apolloio/mcp",
+      "version": "0.1.1",
+      "transport": {
+        "type": "http+sse",
+        "url": "https://mcp.apollo.io/mcp"
+      }
+    }
+  ]
+}

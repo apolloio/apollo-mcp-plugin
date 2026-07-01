@@ -1,0 +1,22 @@
+{
+  "name": "@apolloio/mcp",
+  "version": "0.1.1",
+  "description": "Official Apollo.io MCP server — connect Claude, Cursor, and other AI clients to Apollo's 275M+ contact database for lead enrichment, prospecting, and outreach sequences.",
+  "keywords": [
+    "mcp",
+    "apollo",
+    "apollo-io",
+    "sales",
+    "enrichment",
+    "prospecting",
+    "crm",
+    "leads"
+  ],
+  "homepage": "https://github.com/apolloio/apollo-mcp-plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apolloio/apollo-mcp-plugin.git"
+  },
+  "license": "MIT",
+  "mcpName": "io.github.apolloio/mcp"
+}
