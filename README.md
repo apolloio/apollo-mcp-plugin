@@ -104,6 +104,12 @@ In Claude Code, run:
 
 This ensures the MCP server starts correctly.
 
+### Cursor
+
+1. Open Cursor and go to the Plugin Marketplace
+2. Search for "Apollo" and install
+3. Authenticate with your Apollo.io account when prompted
+
 ---
 
 ## 🔑 Authentication

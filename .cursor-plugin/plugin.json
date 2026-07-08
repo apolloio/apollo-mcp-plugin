@@ -1,0 +1,14 @@
+{
+  "name": "apollo",
+  "version": "0.1.1",
+  "description": "Prospect, enrich leads, load outreach sequences, and query sales analytics with Apollo.io — one-click MCP server integration.",
+  "author": {
+    "name": "Apollo.io",
+    "email": "devtools@apollo.io"
+  },
+  "homepage": "https://www.apollo.io/",
+  "repository": "https://github.com/apolloio/apollo-mcp-plugin",
+  "license": "MIT",
+  "keywords": ["apollo", "sales", "prospecting", "icp", "enrichment", "sequences", "analytics", "mcp"],
+  "mcpServers": "./.mcp.json"
+}
