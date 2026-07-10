@@ -1,15 +1,19 @@
 ---
 name: prospect
-description: "Full ICP-to-leads pipeline. Describe your ideal customer in plain English and get a ranked table of enriched decision-maker leads with emails and phone numbers."
+description: "Find prospects from an ICP using Apollo search first, with credit-spending steps and record saves only after explicit approval."
 user-invocable: true
 argument-hint: [describe your ideal customer]
 ---
 
 # Prospect
 
-Go from an ICP description to a ranked, enriched lead list in one shot. The user describes their ideal customer via "$ARGUMENTS".
+Turn an ICP description into a ranked prospect shortlist. Default to search-only results. Do not charge credits, show private contact data, save records, or sequence anyone unless the user explicitly approves that separate step.
+
+Operate like a GTM engineer helping a seller build a usable prospecting motion. Make one concise, correctable assumption when the user's ICP is underspecified and a safe read-only search can still proceed. Do not expose raw tool names, endpoint details, internal IDs, or private contact fields in seller-facing output unless a confirmed next action requires them.
 
 ## Examples
+
+In Replit, ask for the same workflow in natural language. The slash commands below are plugin command examples, not required Replit syntax.
 
 - `/apollo:prospect VP of Engineering at Series B+ SaaS companies in the US, 200-1000 employees`
 - `/apollo:prospect heads of marketing at e-commerce companies in Europe`
@@ -17,74 +21,126 @@ Go from an ICP description to a ranked, enriched lead list in one shot. The user
 - `/apollo:prospect procurement managers at manufacturing companies with 1000+ employees`
 - `/apollo:prospect SDR leaders at companies using Salesforce and Outreach`
 
-## Step 1 — Parse the ICP
+Replit builder prompts:
 
-Extract structured filters from the natural language description in "$ARGUMENTS":
+- `I am building a Replit lead finder. Given form inputs for title, industry, headcount, and geography, design the Apollo search flow and result table.`
+- `Find VP Engineering prospects at Series B fintech companies in the US, but start search-only with 10 results.`
+- `My app has an ICP form for steel manufacturing companies. Help me turn the inputs into an Apollo search without saving anything.`
 
-**Company filters:**
-- Industry/vertical keywords → `q_organization_keyword_tags`
-- Employee count ranges → `organization_num_employees_ranges`
-- Company locations → `organization_locations`
-- Specific domains → `q_organization_domains_list`
+## Step 0 - Confirm Available Tools
 
-**Person filters:**
-- Job titles → `person_titles`
-- Seniority levels → `person_seniorities`
-- Person locations → `person_locations`
+Use the Apollo tools exposed by the current client. Tool names vary by client, so discover or confirm tools before relying on exact names.
 
-If the ICP is vague, ask 1-2 clarifying questions before proceeding. At minimum, you need a title/role and an industry or company size.
+Needed capabilities:
 
-## Step 2 — Search for Companies
+- people search, such as `apollo_mixed_people_api_search`
+- optional company search, such as `apollo_mixed_companies_search`
+- optional people enrichment/match, such as `apollo_people_match` or `apollo_people_bulk_match`
+- optional contact creation, such as `apollo_contacts_create`
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_companies_search` with the company filters:
-- `q_organization_keyword_tags` for industry/vertical
-- `organization_num_employees_ranges` for size
-- `organization_locations` for geography
-- Set `per_page` to 25
+If a needed capability is missing, explain what is unavailable and continue only with safe alternatives.
 
-## Step 3 — Enrich Top Companies
+## Step 1 - Parse the ICP
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_bulk_enrich` with the domains from the top 10 results. This reveals revenue, funding, headcount, and firmographic data to help rank companies.
+Extract structured filters from "$ARGUMENTS":
 
-## Step 4 — Find Decision Makers
+Company filters:
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with:
-- `person_titles` and `person_seniorities` from the ICP
-- `q_organization_domains_list` scoped to the enriched company domains
-- `per_page` set to 25
+- industry or vertical keywords, usually `q_organization_keyword_tags` when supported
+- employee count ranges, usually `organization_num_employees_ranges`
+- company locations, usually `organization_locations`
+- company domains, usually `q_organization_domains_list`
+- technologies or funding signals, if supported by the exposed tools
 
-## Step 5 — Enrich Top Leads
+Person filters:
 
-> **Credit warning**: Tell the user exactly how many credits will be consumed before proceeding.
+- job titles, usually `person_titles`
+- seniority levels, usually `person_seniorities`
+- person locations, usually `person_locations`
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` to enrich up to 10 leads per call with:
-- `first_name`, `last_name`, `domain` for each person
-- `reveal_personal_emails` set to `true`
+If the ICP includes a role/title plus one company, geography, domain, industry, size, or funding signal, proceed with one concise, correctable assumption instead of turning the interaction into a questionnaire. If neither a role/title nor a company/account signal is present, ask one clarifying question before searching.
 
-If more than 10 leads, batch into multiple calls.
+## Step 2 - Search Read-Only
 
-## Step 6 — Present the Lead Table
+Run people search first with a small, appropriate limit. Use the user's requested volume when reasonable; otherwise default to 10.
 
-Show results in a ranked table:
+Use company search only if it is available and safe in the current environment. Treat Apollo company search as credit-consuming, non-mutating search when the current tool description or source-derived risk matrix indicates one-credit search behavior; do not treat approval for company search as approval to mutate accounts or contacts. If company search is credit-gated or unclear, ask before using it:
 
-### Leads matching: [ICP Summary]
+```text
+This company search may consume 1 credit. Do you want to proceed?
+```
 
-| # | Name | Title | Company | Employees | Revenue | Email | Phone | ICP Fit |
-|---|---|---|---|---|---|---|---|---|
+Do not call credit-charging enrichment tools during this step.
 
-**ICP Fit** scoring:
-- **Strong** — title, seniority, company size, and industry all match
-- **Good** — 3 of 4 criteria match
-- **Partial** — 2 of 4 criteria match
+## Step 3 - Present a Search-Only Shortlist
 
-**Summary**: Found X leads across Y companies. Z credits consumed.
+Show a concise table without private emails, phones, or unnecessary internal IDs:
 
-## Step 7 — Offer Next Actions
+| # | Name or masked name | Title | Company | Location | Fit |
+|---|---|---|---|---|---|
 
-Ask the user:
+Fit scoring:
 
-1. **Save all to Apollo** — Bulk-create contacts via `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with `run_dedupe: true` for each lead
-2. **Load into a sequence** — Ask which sequence and run the sequence-load flow for these contacts
-3. **Deep-dive a company** — Run `/apollo:company-intel` on any company from the list
-4. **Refine the search** — Adjust filters and re-run
-5. **Export** — Format leads as a CSV-style table for easy copy-paste
+- Strong: title, seniority, company type, and location/size match
+- Good: most major criteria match
+- Partial: useful but missing one or more key criteria
+
+Summarize:
+
+- number of prospects reviewed
+- filters used
+- whether results are search-only or include any credit-charged details
+- UI-friendly fields for a Replit lead finder, such as display name, title, company, location, fit reason, and next-safe-action
+- recommended safe next step, such as refine filters, add more detail for selected prospects, save selected contacts, or prepare for sequencing
+
+## Step 4 - Offer Gated Next Actions
+
+Offer only actions that are available in the current client:
+
+1. Refine the search with different filters.
+2. Add more detail for selected prospects after credit confirmation.
+3. Save selected prospects to Apollo after mutation confirmation.
+4. Load selected contacts into a sequence by switching to the sequencing workflow.
+5. Format the search-only shortlist as a copyable table if the user wants to work from it manually.
+
+Before bulk people enrichment, say this exact confirmation with the real count:
+
+```text
+This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?
+```
+
+For one-person enrichment, say this exact confirmation with the person's name or label:
+
+```text
+Enriching [name] will consume 1 credit (no charge if not found). Do you want to proceed?
+```
+
+For company enrichment, use the exact company enrichment confirmation required by the available tool.
+
+Before phone number or direct-dial reveal, say:
+
+```text
+Revealing phone or direct-dial data may consume credits for [N] people. Do you want to proceed?
+```
+
+If the user asks for both bulk enrichment and phone/direct-dial data, ask the bulk enrichment confirmation and the phone/direct-dial confirmation as two separate exact confirmations. Do not merge the phone/direct-dial confirmation into an addendum or paraphrase.
+
+Before contact creation, say:
+
+```text
+This will create or update [N] Apollo contact record(s). Please confirm before I continue.
+```
+
+Before account creation or account update, say:
+
+```text
+This will create or update [N] Apollo account record(s). Please confirm before I continue.
+```
+
+Before field-specific account edits, say:
+
+```text
+This will update Apollo [object type] field(s): [specific fields and values]. Please confirm before I continue.
+```
+
+Approval to charge credits for more detail does not imply approval for contact creation or sequencing.
