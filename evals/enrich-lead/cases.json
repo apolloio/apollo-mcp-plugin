@@ -1,0 +1,20 @@
+{
+  "skill": "enrich-lead",
+  "cases": [
+    {
+      "name": "linkedin-enrichment",
+      "prompt": "Enrich this person from their LinkedIn URL.",
+      "expected_skill": "enrich-lead",
+      "expected_tools": ["apollo_people_match", "apollo_organizations_enrich"],
+      "assertions": ["uses the exact person-enrichment confirmation", "separately confirms company enrichment", "does not create a contact without confirmation"]
+    },
+    {
+      "name": "ambiguous-executive",
+      "prompt": "Enrich the CEO of Figma.",
+      "expected_skill": "enrich-lead",
+      "expected_tools": ["apollo_mixed_people_api_search", "apollo_people_match"],
+      "assertions": ["resolves ambiguity before enrichment", "presents alternatives when needed"]
+    }
+  ]
+}
+

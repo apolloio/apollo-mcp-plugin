@@ -1,163 +1,83 @@
-# Apollo Plugin for Claude Code and Cowork
+# Apollo Agent Skills and MCP Plugins
 
-Prospect, enrich leads, and add to outreach sequences with [Apollo.io](https://www.apollo.io/) MCP Server
-- Fast to install.
-- Powerful in execution.
-- Designed for real GTM workflows.
+Portable sales workflows for the [Apollo MCP server](https://docs.apollo.io/docs/apollo-mcp), packaged for Claude, Cursor, Codex, GitHub Copilot, and generic Agent Skills clients.
 
----
+This repository is the canonical public source. Edit each workflow only in `skills/<skill>/SKILL.md`; package builds copy those canonical directories without client-specific rewrites.
 
-## 🔌 One-Click MCP Server Integration
+## Public Skills
 
-This plugin automatically configures the Apollo MCP Server when installed.
-No manual server setup or config files.
-Install the plugin, authenticate with Apollo, and run `/apollo:*` commands.
+| Skill | What it does | Safety behavior |
+|---|---|---|
+| `onboarding` | Connect with OAuth, verify access, and choose a workflow | Read-only verification |
+| `analytics` | Answer sales performance questions | Read-only |
+| `enrich-lead` | Enrich a person and their company | Confirms each credit action |
+| `prospect` | Turn an ICP into a ranked lead list | Confirms full enrichment volume and balance |
+| `sequence-load` | Find and enroll contacts into a sequence | Previews and confirms credit use and enrollment |
 
----
+The machine-readable source for versions, tool dependencies, safety behavior, and supported clients is [`catalog/skills.yaml`](catalog/skills.yaml).
 
-## ✅ Powerful Skills
+## Install
 
-High-value skills that chain multiple Apollo APIs into complete workflows:
+### Consent-Based Installer
 
-| Skill | What it does |
-|---|---|
-| `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email and get a full contact card with company context and next actions |
-| `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers |
-| `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment |
-| `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data |
+From a checkout:
 
-
-### `/apollo:enrich-lead`
-
-Best for: one-off enrichment and fast lead lookups. <br>
-Input: name, company, LinkedIn URL, or email <br>
-Output: enriched profile (role, location, company context) and suggested next steps
-
-### `/apollo:prospect`
-Best for: turning an ICP into a shortlist fast. <br>
-Input: ICP description (industry, size, geography, titles) <br>
-Output: ranked lead table with enriched decision-makers
-
-### `/apollo:sequence-load`
-Best for: taking action on a list. <br>
-Input: targeting criteria + target sequence <br>
-Output: preview of candidates, enrichment + dedupe, then bulk enrollment into the sequence
-
-### `/apollo:analytics`
-Best for: answering performance questions without opening a dashboard. <br>
-Input: any question about emails, calls, meetings, tasks, opportunities, sequences, or conversation intelligence <br>
-Output: formatted tables with real Apollo data, broken down by rep, team, time, sequence, stage, or any other dimension
-
-
-Important: sequence enrollment may trigger outbound depending on your sequence settings and sending configuration.
-
----
-
-## 🧠 Model Recommendations (Quality-First)
-
-Recommended: Opus (best quality)
-
-Use Opus when you want the strongest reasoning and the most reliable multi-step tool orchestration.
-
-- Best for: prospecting workflows, ambiguous matches, multi-step chaining, and anything high-stakes
-- Tradeoff: higher latency and higher model usage cost on the Anthropic side
-
-### Strong fallback: Sonnet (faster)
-
-Use Sonnet when you want speed for quick lookups, smaller jobs, or rapid iteration.
-
-- Best for: quick searches, lightweight enrichment, and tight loops
-- Tradeoff: may require more user guidance for complex multi-step workflows
-
-In Claude Code, you can switch models via `/model`.
-
-
----
-
-## 📦 Installation
-
-### Cowork
-
-Click the link below to install in one step:
-
-[Install in Cowork](https://claude.ai/desktop/customize/plugins/new?marketplace=apolloio/apollo-mcp-plugin&plugin=apollo)
-
-Then restart Cowork to ensure the MCP server starts correctly.
-
-### Claude Code
-
-#### 1. Add this plugin's marketplace
-
-In Claude Code, run:
-
+```bash
+pnpm install
+pnpm exec apollo-skills setup
+pnpm exec apollo-skills list
+pnpm exec apollo-skills recommend "find decision makers matching my ICP"
+pnpm exec apollo-skills add prospect --target generic
+pnpm exec apollo-skills doctor
 ```
+
+After publication, use `npx @apolloio/agent-skills` in place of `pnpm exec apollo-skills`.
+
+`setup` installs only the onboarding skill. `setup` and `add` show the selected skills, destination, version, credit behavior, and write behavior before asking for confirmation. Use `--yes` only after reviewing that plan.
+
+Supported targets are `generic`, `claude`, `cursor`, `codex`, and `copilot`.
+
+### Claude Code and Cowork
+
+```text
 /plugin marketplace add apolloio/apollo-mcp-plugin
-```
-
-#### 2. Install the plugin
-
-```
 /plugin install apollo@apollo-plugin-marketplace
 ```
 
-#### 3. Restart Claude Code
-
-This ensures the MCP server starts correctly.
+[Install in Cowork](https://claude.ai/desktop/customize/plugins/new?marketplace=apolloio/apollo-mcp-plugin&plugin=apollo)
 
 ### Cursor
 
-1. Open Cursor and go to the Plugin Marketplace
-2. Search for "Apollo" and install
-3. Authenticate with your Apollo.io account when prompted
+Open the Cursor Plugin Marketplace, search for `Apollo`, and install the plugin.
 
----
+## Connect Apollo MCP
 
-## 🔑 Authentication
+Every package uses the same remote Streamable HTTP endpoint:
 
-The Apollo MCP Server supports **OAuth**:
+```text
+https://mcp.apollo.io/mcp
+```
 
-1. After installation, run `/mcp` in Claude Code or `connect` to Apollo.io connector from settings
-2. Select the **Apollo** server and click **Authenticate**
-3. Complete the Apollo.io login in your browser
-4. Done — all commands are now ready to use
+Authentication uses OAuth 2.0. Apollo permissions, plan limits, and credits continue to apply. Follow the [Apollo MCP documentation](https://docs.apollo.io/docs/apollo-mcp) for client-specific connection controls.
 
----
+## Recommend Contract
 
-## **⚠️** Apollo Credits and Safety
+[`contracts/recommend-apollo-skills.schema.json`](contracts/recommend-apollo-skills.schema.json) defines the read-only `recommend_apollo_skills` contract. Contract version `1.0.0` returns recommendations and client-specific install commands; it never installs files.
 
-Some operations consume Apollo credits:
+## Maintain
 
-- People enrichment typically costs 1 credit per person
-- Bulk enrichment consumes credits based on how many people are enriched
+```bash
+pnpm install
+pnpm check
+pnpm build
+```
 
-This plugin is designed to warn and request confirmation before credit-consuming actions by default.
-
-Sequence safety:
-
-- Adding contacts to a sequence can enroll them into an active sequence
-- Depending on your sequence settings, outbound may start automatically
-- Always verify your sequence name, sending account, and enrollment volume before confirming
-
----
-
-## Quickstart Examples
-
-Try these in Claude:
-
-- “Enrich this lead: [https://www.linkedin.com/in/…”](https://www.linkedin.com/in/%E2%80%A6%E2%80%9D)
-- “Find 25 VP Sales at SaaS companies (200-1000 employees) that raised funding in the last 6 months.”
-- “Load the top 10 enriched leads into my sequence called ‘Q1 Enterprise Outbound’ and show me a preview before enrolling.”
-- “Show me email and call performance by rep for this quarter, sorted by calls made.”
-
----
-
-## 🙌 Credits
-
-- **MCP Server** by [Apollo.io](https://docs.apollo.io/)
-- **Plugin Specification** by [Anthropic](https://docs.anthropic.com/)
-
----
+- Keep public skill source under `skills/`.
+- Update the catalog and focused eval cases with behavioral changes.
+- Use stable Apollo server-level tool names, not client-qualified names.
+- Keep generated output under `dist/`; it is not committed.
+- Keep private, local, transport-experiment, raw evaluation, and credential-handling artifacts out of this repository.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT. See [LICENSE](LICENSE).

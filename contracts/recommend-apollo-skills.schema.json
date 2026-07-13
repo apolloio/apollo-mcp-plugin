@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/apolloio/apollo-mcp-plugin/contracts/recommend-apollo-skills.schema.json",
+  "title": "recommend_apollo_skills contract",
+  "description": "Versioned, read-only contract for recommending public Apollo skills without installing them.",
+  "type": "object",
+  "required": ["contract_version", "input", "output"],
+  "properties": {
+    "contract_version": { "const": "1.0.0" },
+    "input": {
+      "type": "object",
+      "required": ["workflow"],
+      "properties": {
+        "workflow": { "type": "string", "minLength": 1, "pattern": ".*\\S.*" },
+        "client_hint": { "enum": ["generic", "claude", "cursor", "codex", "copilot"] }
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "required": ["contract_version", "recommendations"],
+      "properties": {
+        "contract_version": { "const": "1.0.0" },
+        "recommendations": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["skill_id", "version", "reason", "visibility", "required_tools", "install_command"],
+            "properties": {
+              "skill_id": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+              "reason": { "type": "string", "minLength": 1 },
+              "visibility": { "const": "public" },
+              "required_tools": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+              "install_command": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

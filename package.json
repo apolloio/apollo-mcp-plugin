@@ -1,0 +1,30 @@
+{
+  "name": "@apolloio/agent-skills",
+  "version": "0.3.0",
+  "description": "Portable Apollo Agent Skills and multi-client MCP plugin packages.",
+  "type": "module",
+  "bin": {
+    "apollo-skills": "./bin/apollo-skills.mjs"
+  },
+  "files": [
+    "bin",
+    "catalog",
+    "contracts",
+    "lib",
+    "skills"
+  ],
+  "scripts": {
+    "build": "node scripts/build-packages.mjs",
+    "check": "node scripts/validate.mjs && node --test",
+    "test": "node --test",
+    "validate": "node scripts/validate.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/apolloio/apollo-mcp-plugin",
+  "dependencies": {
+    "yaml": "^2.8.1"
+  }
+}

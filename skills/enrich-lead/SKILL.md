@@ -1,58 +1,70 @@
 ---
 name: enrich-lead
 description: "Instant lead enrichment. Drop a name, company, LinkedIn URL, or email and get the full contact card with email, phone, title, company intel, and next actions."
-user-invocable: true
-argument-hint: [name, company, LinkedIn URL, or email]
+license: MIT
+metadata:
+  author: Apollo.io
+  version: "0.3.0"
 ---
 
 # Enrich Lead
 
-Turn any identifier into a full contact dossier. The user provides identifying info via "$ARGUMENTS".
+Turn any identifier in the user's request into a full contact dossier.
 
 ## Examples
 
-- `/apollo:enrich-lead Tim Zheng at Apollo`
-- `/apollo:enrich-lead https://www.linkedin.com/in/timzheng`
-- `/apollo:enrich-lead sarah@stripe.com`
-- `/apollo:enrich-lead Jane Smith, VP Engineering, Notion`
-- `/apollo:enrich-lead CEO of Figma`
+- `Enrich Tim Zheng at Apollo.`
+- `Enrich https://www.linkedin.com/in/timzheng.`
+- `Find the contact details for sarah@stripe.com.`
+- `Enrich Jane Smith, VP Engineering at Notion.`
+- `Enrich the CEO of Figma.`
 
-## Step 1 — Parse Input
+## Step 1 â€” Parse Input
 
-From "$ARGUMENTS", extract every identifier available:
+From the user's request, extract every identifier available:
 - First name, last name
 - Company name or domain
 - LinkedIn URL
 - Email address
 - Job title (use as a matching hint)
 
-If the input is ambiguous (e.g. just "CEO of Figma"), first use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with relevant title and domain filters to identify the person, then proceed to enrichment.
+If the input is ambiguous (e.g. just "CEO of Figma"), first use the Apollo MCP tool `apollo_mixed_people_api_search` with relevant title and domain filters to identify the person, then proceed to enrichment.
 
-## Step 2 — Enrich the Person
+## Step 2 â€” Enrich the Person
 
-> **Credit warning**: Tell the user enrichment consumes 1 Apollo credit before calling.
+Before calling person enrichment, say exactly:
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_people_match` with all available identifiers:
+> "Enriching [name] will consume 1 credit (no charge if not found). Do you want to proceed?"
+
+Wait for explicit confirmation. Do not call the tool if the user has not confirmed.
+
+Use the Apollo MCP tool `apollo_people_match` with all available identifiers:
 - `first_name`, `last_name` if name is known
 - `domain` or `organization_name` if company is known
 - `linkedin_url` if LinkedIn is provided
 - `email` if email is provided
 - Set `reveal_personal_emails` to `true`
 
-If the match fails, try `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with looser filters and present the top 3 candidates. Ask the user to pick one, then re-enrich.
+If the match fails, try `apollo_mixed_people_api_search` with looser filters and present the top 3 candidates. Ask the user to pick one, then re-enrich.
 
-## Step 3 — Enrich Their Company
+## Step 3 â€” Enrich Their Company
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_enrich` with the person's company domain to pull firmographic context.
+Company enrichment is a separate credit-consuming action. Before calling it, say exactly:
 
-## Step 4 — Present the Contact Card
+> "Enriching [domain] will consume 1 credit (no charge if not found). Do you want to proceed?"
+
+Wait for explicit confirmation. If the user declines, present the person data without enriched company context.
+
+Use the Apollo MCP tool `apollo_organizations_enrich` with the person's company domain to pull firmographic context.
+
+## Step 4 â€” Present the Contact Card
 
 Format the output exactly like this:
 
 ---
 
 **[Full Name]** | [Title]
-[Company Name] · [Industry] · [Employee Count] employees
+[Company Name] Â· [Industry] Â· [Employee Count] employees
 
 | Field | Detail |
 |---|---|
@@ -70,11 +82,11 @@ Format the output exactly like this:
 
 ---
 
-## Step 5 — Offer Next Actions
+## Step 5 â€” Offer Next Actions
 
 Ask the user which action to take:
 
-1. **Save to Apollo** — Create this person as a contact via `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with `run_dedupe: true`
-2. **Add to a sequence** — Ask which sequence, then run the sequence-load flow
-3. **Find colleagues** — Search for more people at the same company using `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with `q_organization_domains_list` set to this company
-4. **Find similar people** — Search for people with the same title/seniority at other companies
+1. **Save to Apollo** â€” Create this person as a contact via `apollo_contacts_create` with `run_dedupe: true`
+2. **Add to a sequence** â€” Ask which sequence, then run the sequence-load flow
+3. **Find colleagues** â€” Search for more people at the same company using `apollo_mixed_people_api_search` with `q_organization_domains_list` set to this company
+4. **Find similar people** â€” Search for people with the same title/seniority at other companies

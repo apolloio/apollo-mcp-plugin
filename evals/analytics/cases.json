@@ -1,0 +1,20 @@
+{
+  "skill": "analytics",
+  "cases": [
+    {
+      "name": "sequence-reply-rate",
+      "prompt": "Which sequences had the highest reply rate in the last six months?",
+      "expected_skill": "analytics",
+      "expected_tools": ["apollo_analytics_sync_report"],
+      "assertions": ["uses last_6_months", "formats reply rate as a percentage", "does not write data"]
+    },
+    {
+      "name": "sequence-name-filter",
+      "prompt": "Show email performance for the Enterprise Outbound sequence this quarter.",
+      "expected_skill": "analytics",
+      "expected_tools": ["apollo_emailer_campaigns_search", "apollo_analytics_sync_report"],
+      "assertions": ["resolves the sequence ID before analytics", "uses current_quarter"]
+    }
+  ]
+}
+

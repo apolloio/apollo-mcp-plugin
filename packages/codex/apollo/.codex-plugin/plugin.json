@@ -1,0 +1,30 @@
+{
+  "name": "apollo",
+  "version": "0.3.0",
+  "description": "Onboard, prospect, enrich leads, manage outreach sequences, and query sales analytics with Apollo MCP.",
+  "author": {
+    "name": "Apollo.io",
+    "email": "devtools@apollo.io",
+    "url": "https://www.apollo.io/"
+  },
+  "homepage": "https://docs.apollo.io/docs/apollo-mcp",
+  "repository": "https://github.com/apolloio/apollo-mcp-plugin",
+  "license": "MIT",
+  "keywords": ["apollo", "sales", "prospecting", "enrichment", "sequences", "analytics", "mcp"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Apollo",
+    "shortDescription": "Run Apollo sales workflows from Codex.",
+    "longDescription": "Connect and verify Apollo MCP, then use portable skills to prospect, enrich leads, manage sequences, and analyze sales activity.",
+    "developerName": "Apollo.io",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://www.apollo.io/",
+    "defaultPrompt": [
+      "Help me connect to Apollo and choose a safe first workflow.",
+      "Find decision-makers matching my ICP.",
+      "Enrich this lead and show company context."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}

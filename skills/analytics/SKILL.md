@@ -1,34 +1,36 @@
 ---
 name: analytics
-description: "Instant sales analytics. Ask any performance question — emails, calls, meetings, tasks, opportunities, sequences, conversation intelligence — and get formatted tables with real Apollo data."
-user-invocable: true
-argument-hint: [your analytics question]
+description: "Instant sales analytics. Ask any performance question â€” emails, calls, meetings, tasks, opportunities, sequences, conversation intelligence â€” and get formatted tables with real Apollo data."
+license: MIT
+metadata:
+  author: Apollo.io
+  version: "0.3.0"
 ---
 
 # Analytics
 
-Answer any sales performance question using Apollo's analytics data. The user asks a question via "$ARGUMENTS".
+Answer any sales performance question using Apollo's analytics data. Treat the user's request as the analytics question.
 
 ## Examples
 
-- `/apollo:analytics How many emails did I send last 30 days?`
-- `/apollo:analytics Show me team call connect rate this quarter by rep`
-- `/apollo:analytics What's our email reply rate week over week for this year?`
-- `/apollo:analytics Break down pipeline and won amount by opportunity stage all time`
-- `/apollo:analytics Which sequences have the highest reply rate in the last 6 months?`
-- `/apollo:analytics Show me activity summary — emails, calls, meetings, tasks — for each rep this quarter`
-- `/apollo:analytics How are calls trending by day of week over the last 3 months?`
-- `/apollo:analytics Show me emails sent vs replied broken down by contact stage and email type`
+- `How many emails did I send last 30 days?`
+- `Show me team call connect rate this quarter by rep.`
+- `What's our email reply rate week over week for this year?`
+- `Break down pipeline and won amount by opportunity stage all time.`
+- `Which sequences have the highest reply rate in the last 6 months?`
+- `Show me activity summary â€” emails, calls, meetings, tasks â€” for each rep this quarter.`
+- `How are calls trending by day of week over the last 3 months?`
+- `Show me emails sent vs replied broken down by contact stage and email type.`
 
-## Step 1 — Interpret the Question
+## Step 1 â€” Interpret the Question
 
-Parse "$ARGUMENTS" to determine the following parameters:
+Parse the user's request to determine the following parameters:
 
 ---
 
 ### Metrics
 
-Select 1–15 metrics that match what the user is asking about. Always include the rate/percent version alongside raw counts when the user asks about performance.
+Select 1â€“15 metrics that match what the user is asking about. Always include the rate/percent version alongside raw counts when the user asks about performance.
 
 **Email**
 `num_emails_sent`, `num_emails_delivered`, `num_emails_opened`, `num_emails_clicked`, `num_emails_replied`, `num_emails_bounced`, `num_emails_unsubscribed`, `percent_emails_replied`, `num_contacts_emailed`, `num_contacts_opened`, `num_contacts_replied`
@@ -129,11 +131,11 @@ If the user wants a cross-tab (e.g. "by rep AND by sequence", "broken down by st
 
 ### Filters
 
-- "my data" / "for me" / "my performance" → `filters: { user_ids: ["current"] }`
-- Specific user by Apollo user ID → `filters: { user_ids: ["<user_id>"] }` (can combine: `["current", "user_id_1"]`)
-- "team" / no user mention → omit filters entirely (returns team-wide data)
-- Filter by team/subteam → `filters: { team_ids: ["<subteam_id>"] }`
-- Filter by sequence name → first call `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_search` to resolve the name to an ID, then pass `filters: { emailer_campaign_ids: ["<id>"] }`
+- "my data" / "for me" / "my performance" â†’ `filters: { user_ids: ["current"] }`
+- Specific user by Apollo user ID â†’ `filters: { user_ids: ["<user_id>"] }` (can combine: `["current", "user_id_1"]`)
+- "team" / no user mention â†’ omit filters entirely (returns team-wide data)
+- Filter by team/subteam â†’ `filters: { team_ids: ["<subteam_id>"] }`
+- Filter by sequence name â†’ first call the Apollo MCP tool `apollo_emailer_campaigns_search` to resolve the name to an ID, then pass `filters: { emailer_campaign_ids: ["<id>"] }`
 
 ---
 
@@ -146,14 +148,14 @@ sort: { metric: "<metric_name>", asc: false }
 Use `asc: true` for "lowest first" or "worst performing" queries.
 
 Two constraints:
-- Sort only applies when `group_by` is set — it has no effect on flat queries
+- Sort only applies when `group_by` is set â€” it has no effect on flat queries
 - The sort metric must be included in the `metrics` array
 
 ---
 
-## Step 2 — Call the Analytics Tool
+## Step 2 â€” Call the Analytics Tool
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_analytics_sync_report` with the parameters determined above.
+Use the Apollo MCP tool `apollo_analytics_sync_report` with the parameters determined above.
 
 If the question spans multiple independent dimensions (e.g. "show me email metrics by rep AND separately by sequence"), make two sequential calls.
 
@@ -161,28 +163,28 @@ If the question is ambiguous, make a reasonable default call first, then offer t
 
 ---
 
-## Step 3 — Present the Results
+## Step 3 â€” Present the Results
 
-**Flat response** (no group_by): Present as a clean two-column summary table — metric name and value.
+**Flat response** (no group_by): Present as a clean two-column summary table â€” metric name and value.
 
 **Grouped response** (group_by only): Present as a table with the dimension as the first column and metrics as subsequent columns. Highlight notable outliers (top performer, lowest rate, biggest gap).
 
 **Pivot response** (group_by + pivot_group_by): Present each metric as a separate labeled table. Add a brief summary sentence per table.
 
 Always:
-- Convert decimals to readable percentages (e.g. `0.14` → `14%`)
+- Convert decimals to readable percentages (e.g. `0.14` â†’ `14%`)
 - Format large numbers with commas
 - If the response says "Showing first N of M rows", mention the total count and offer to refine
-- Add 1–2 sentences of insight after the data (e.g. "Tuesday has the highest call volume at 355 calls", "Sarah Flores leads reply rate at 14%")
+- Add 1â€“2 sentences of insight after the data (e.g. "Tuesday has the highest call volume at 355 calls", "Sarah Flores leads reply rate at 14%")
 
 ---
 
-## Step 4 — Offer Follow-up Actions
+## Step 4 â€” Offer Follow-up Actions
 
-After presenting results, suggest 2–3 relevant next steps:
+After presenting results, suggest 2â€“3 relevant next steps:
 
-1. **Drill deeper** — break down by another dimension (e.g. "want to see this by rep?")
-2. **Change date range** — compare with a different time period
-3. **Add more metrics** — "want to add meetings or tasks to this view?"
-4. **Pivot view** — "want to cross-tab this — e.g. by rep × sequence?"
-5. **Export** — format as CSV-style table for copy-paste
+1. **Drill deeper** â€” break down by another dimension (e.g. "want to see this by rep?")
+2. **Change date range** â€” compare with a different time period
+3. **Add more metrics** â€” "want to add meetings or tasks to this view?"
+4. **Pivot view** â€” "want to cross-tab this â€” e.g. by rep Ã— sequence?"
+5. **Export** â€” format as CSV-style table for copy-paste

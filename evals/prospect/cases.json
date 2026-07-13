@@ -1,0 +1,20 @@
+{
+  "skill": "prospect",
+  "cases": [
+    {
+      "name": "complete-icp",
+      "prompt": "Find VPs of Engineering at US SaaS companies with 200-1000 employees.",
+      "expected_skill": "prospect",
+      "expected_tools": ["apollo_mixed_companies_search", "apollo_users_api_profile", "apollo_mixed_people_api_search", "apollo_people_bulk_match"],
+      "assertions": ["confirms company-search credit use", "checks remaining balance", "confirms the total enrichment scope"]
+    },
+    {
+      "name": "vague-icp",
+      "prompt": "Find me good prospects.",
+      "expected_skill": "prospect",
+      "expected_tools": [],
+      "assertions": ["asks for role and company criteria before searching"]
+    }
+  ]
+}
+

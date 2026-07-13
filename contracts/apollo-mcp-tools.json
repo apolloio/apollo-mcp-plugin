@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "verified_at": "2026-07-13",
+  "source": "Apollo MCP runtime tool catalog",
+  "notes": "Clients may qualify or hash tool identifiers. Canonical skills use the stable server-level names below.",
+  "tools": [
+    "apollo_analytics_sync_report",
+    "apollo_contacts_create",
+    "apollo_email_accounts_index",
+    "apollo_emailer_campaigns_add_contact_ids",
+    "apollo_emailer_campaigns_remove_or_stop_contact_ids",
+    "apollo_emailer_campaigns_search",
+    "apollo_mixed_companies_search",
+    "apollo_mixed_people_api_search",
+    "apollo_organizations_bulk_enrich",
+    "apollo_organizations_enrich",
+    "apollo_people_bulk_match",
+    "apollo_people_match",
+    "apollo_users_api_profile"
+  ]
+}
+

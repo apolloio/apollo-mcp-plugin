@@ -1,58 +1,60 @@
 ---
 name: sequence-load
 description: "Find leads matching criteria and bulk-add them to an Apollo outreach sequence. Handles enrichment, contact creation, deduplication, and enrollment in one flow."
-user-invocable: true
-argument-hint: [targeting criteria + sequence name]
+license: MIT
+metadata:
+  author: Apollo.io
+  version: "0.3.0"
 ---
 
 # Sequence Load
 
-Find, enrich, and load contacts into an outreach sequence — end to end. The user provides targeting criteria and a sequence name via "$ARGUMENTS".
+Find, enrich, and load contacts into an outreach sequence end to end. Read the targeting criteria and sequence name from the user's request.
 
 ## Examples
 
-- `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
-- `/apollo:sequence-load SDR managers at fintech startups → Cold Outreach v2`
-- `/apollo:sequence-load list sequences` (shows all available sequences)
-- `/apollo:sequence-load directors of engineering, 500+ employees, US → Demo Follow-up`
-- `/apollo:sequence-load reload 15 more leads into "Enterprise Pipeline"`
+- `Add 20 VPs of Sales at SaaS companies to my "Q1 Outbound" sequence.`
+- `Load SDR managers at fintech startups into Cold Outreach v2.`
+- `List my available sequences.`
+- `Add US directors of engineering at companies with 500+ employees to Demo Follow-up.`
+- `Load 15 more leads into "Enterprise Pipeline".`
 
-## Step 1 — Parse Input
+## Step 1 â€” Parse Input
 
-From "$ARGUMENTS", extract:
+From the user's request, extract:
 
 **Targeting criteria:**
-- Job titles → `person_titles`
-- Seniority levels → `person_seniorities`
-- Industry keywords → `q_organization_keyword_tags`
-- Company size → `organization_num_employees_ranges`
-- Locations → `person_locations` or `organization_locations`
+- Job titles â†’ `person_titles`
+- Seniority levels â†’ `person_seniorities`
+- Industry keywords â†’ `q_organization_keyword_tags`
+- Company size â†’ `organization_num_employees_ranges`
+- Locations â†’ `person_locations` or `organization_locations`
 
 **Sequence info:**
-- Sequence name (text after "to", "into", or "→")
-- Volume — how many contacts to add (default: 10 if not specified)
+- Sequence name (text after "to", "into", or "â†’")
+- Volume â€” how many contacts to add (default: 10 if not specified)
 
 If the user just says "list sequences", skip to Step 2 and show all available sequences.
 
-## Step 2 — Find the Sequence
+## Step 2 â€” Find the Sequence
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_search` to find the target sequence:
+Use the Apollo MCP tool `apollo_emailer_campaigns_search` to find the target sequence:
 - Set `q_name` to the sequence name from input
 
 If no match or multiple matches:
 - Show all available sequences in a table: | Name | ID | Status |
 - Ask the user to pick one
 
-## Step 3 — Get Email Account
+## Step 3 â€” Get Email Account
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_email_accounts_index` to list linked email accounts.
+Use the Apollo MCP tool `apollo_email_accounts_index` to list linked email accounts.
 
-- If one account → use automatically
-- If multiple → show them and ask which to send from
+- If one account â†’ use automatically
+- If multiple â†’ show them and ask which to send from
 
-## Step 4 — Find Matching People
+## Step 4 â€” Find Matching People
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with the targeting criteria.
+Use the Apollo MCP tool `apollo_mixed_people_api_search` with the targeting criteria.
 - Set `per_page` to the requested volume (or 10 by default)
 
 Present the candidates in a preview table:
@@ -60,35 +62,40 @@ Present the candidates in a preview table:
 | # | Name | Title | Company | Location |
 |---|---|---|---|---|
 
-Ask: **"Add these [N] contacts to [Sequence Name]? This will consume [N] Apollo credits for enrichment."**
+Call `apollo_users_api_profile` with `include_credit_usage: true`, then say exactly:
 
-Wait for confirmation before proceeding.
+> "Found [N] contacts. Enriching all will use up to [N] credits. You have [X] credits remaining. Want to proceed, or narrow the scope?"
 
-## Step 5 — Enrich and Create Contacts
+Wait for explicit confirmation of the full count before proceeding. Do not confirm incrementally by batch.
+
+## Step 5 â€” Enrich and Create Contacts
 
 For each approved lead:
 
-1. **Enrich** — Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` (batch up to 10 per call) with:
+1. **Enrich** â€” Use `apollo_people_bulk_match` (batch up to 10 per call) with:
    - `first_name`, `last_name`, `domain` for each person
    - `reveal_personal_emails` set to `true`
 
-2. **Create contacts** — For each enriched person, use `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with:
+2. **Create contacts** â€” For each enriched person, use `apollo_contacts_create` with:
    - `first_name`, `last_name`, `email`, `title`, `organization_name`
    - `direct_phone` or `mobile_phone` if available
    - `run_dedupe` set to `true`
 
 Collect all created contact IDs.
 
-## Step 6 — Add to Sequence
+## Step 6 â€” Add to Sequence
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_add_contact_ids` with:
+Present a confirmation summary containing the sender email address, sequence name, number of contacts, and enrollment status. Default the status to `paused` so installation does not immediately start outreach. Wait for explicit confirmation before calling the enrollment tool.
+
+Use the Apollo MCP tool `apollo_emailer_campaigns_add_contact_ids` with:
 - `id`: the sequence ID
 - `emailer_campaign_id`: same sequence ID
 - `contact_ids`: array of created contact IDs
 - `send_email_from_email_account_id`: the chosen email account ID
 - `sequence_active_in_other_campaigns`: `false` (safe default)
+- `status`: `paused` unless the user explicitly confirms active enrollment
 
-## Step 7 — Confirm Enrollment
+## Step 7 â€” Confirm Enrollment
 
 Show a summary:
 
@@ -110,11 +117,11 @@ Show a summary:
 
 ---
 
-## Step 8 — Offer Next Actions
+## Step 8 â€” Offer Next Actions
 
 Ask the user:
 
-1. **Load more** — Find and add another batch of leads
-2. **Review sequence** — Show sequence details and all enrolled contacts
-3. **Remove a contact** — Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_remove_or_stop_contact_ids` to remove specific contacts
-4. **Pause a contact** — Re-add with `status: "paused"` and an `auto_unpause_at` date
+1. **Load more** â€” Find and add another batch of leads
+2. **Review sequence** â€” Show sequence details and all enrolled contacts
+3. **Remove a contact** â€” Use `apollo_emailer_campaigns_remove_or_stop_contact_ids` to remove specific contacts
+4. **Pause a contact** â€” Re-add with `status: "paused"` and an `auto_unpause_at` date

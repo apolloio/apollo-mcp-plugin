@@ -1,0 +1,19 @@
+{
+  "skill": "onboarding",
+  "cases": [
+    {
+      "name": "verify-existing-connection",
+      "prompt": "Help me get started with Apollo and verify that it is connected.",
+      "expected_skill": "onboarding",
+      "expected_tools": ["apollo_users_api_profile"],
+      "assertions": ["uses a read-only verification call", "reports relevant credit and permission state", "does not perform writes"]
+    },
+    {
+      "name": "route-to-workflow",
+      "prompt": "Apollo is connected. Which workflow should I use to build an ICP lead list?",
+      "expected_skill": "onboarding",
+      "expected_tools": [],
+      "assertions": ["routes to prospect", "explains the batch credit confirmation", "does not enrich during onboarding"]
+    }
+  ]
+}

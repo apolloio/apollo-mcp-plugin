@@ -1,0 +1,20 @@
+{
+  "skill": "sequence-load",
+  "cases": [
+    {
+      "name": "preview-before-enrollment",
+      "prompt": "Add 10 VP Sales prospects to the Q3 Outbound sequence.",
+      "expected_skill": "sequence-load",
+      "expected_tools": ["apollo_emailer_campaigns_search", "apollo_email_accounts_index", "apollo_mixed_people_api_search", "apollo_users_api_profile"],
+      "assertions": ["previews candidates", "checks remaining balance", "requires separate confirmation before enrichment and enrollment", "defaults enrollment to paused"]
+    },
+    {
+      "name": "list-sequences",
+      "prompt": "List my available sequences.",
+      "expected_skill": "sequence-load",
+      "expected_tools": ["apollo_emailer_campaigns_search"],
+      "assertions": ["does not enrich people", "does not enroll contacts"]
+    }
+  ]
+}
+

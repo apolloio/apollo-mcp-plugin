@@ -1,0 +1,13 @@
+{
+  "name": "apollo",
+  "version": "0.3.0",
+  "description": "Apollo onboarding and portable sales workflows for GitHub Copilot.",
+  "author": {
+    "name": "Apollo.io"
+  },
+  "homepage": "https://docs.apollo.io/docs/apollo-mcp",
+  "repository": "https://github.com/apolloio/apollo-mcp-plugin",
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}

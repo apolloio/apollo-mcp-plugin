@@ -1,0 +1,77 @@
+{
+  "schema_version": "2",
+  "package_version": "0.3.0",
+  "mcp": {
+    "server": "apollo",
+    "endpoint": "https://mcp.apollo.io/mcp",
+    "authentication": "oauth2"
+  },
+  "surfaces": ["generic", "claude", "cursor", "codex", "copilot"],
+  "skills": [
+    {
+      "id": "onboarding",
+      "path": "skills/onboarding",
+      "version": "0.3.0",
+      "visibility": "public",
+      "owner": "devtools@apollo.io",
+      "description": "Connect to Apollo MCP with OAuth, verify access, and choose the right Apollo workflow.",
+      "triggers": ["onboarding", "get started", "connect Apollo", "set up Apollo", "verify Apollo", "Apollo skills"],
+      "required_tools": ["apollo_users_api_profile"],
+      "credit_behavior": "none",
+      "write_behavior": "read-only",
+      "supported_surfaces": ["generic", "claude", "cursor", "codex", "copilot"]
+    },
+    {
+      "id": "analytics",
+      "path": "skills/analytics",
+      "version": "0.3.0",
+      "visibility": "public",
+      "owner": "devtools@apollo.io",
+      "description": "Answer sales performance questions with Apollo analytics data.",
+      "triggers": ["analytics", "performance", "reply rate", "calls", "meetings", "pipeline", "sequence metrics"],
+      "required_tools": ["apollo_emailer_campaigns_search", "apollo_analytics_sync_report"],
+      "credit_behavior": "none",
+      "write_behavior": "read-only",
+      "supported_surfaces": ["generic", "claude", "cursor", "codex", "copilot"]
+    },
+    {
+      "id": "enrich-lead",
+      "path": "skills/enrich-lead",
+      "version": "0.3.0",
+      "visibility": "public",
+      "owner": "devtools@apollo.io",
+      "description": "Enrich a person and their company, then offer safe follow-up actions.",
+      "triggers": ["enrich", "lead", "contact details", "email", "phone", "linkedin", "company context"],
+      "required_tools": ["apollo_mixed_people_api_search", "apollo_people_match", "apollo_organizations_enrich", "apollo_contacts_create"],
+      "credit_behavior": "exact-confirmation-before-each-credit-action",
+      "write_behavior": "confirmation-before-contact-create",
+      "supported_surfaces": ["generic", "claude", "cursor", "codex", "copilot"]
+    },
+    {
+      "id": "prospect",
+      "path": "skills/prospect",
+      "version": "0.3.0",
+      "visibility": "public",
+      "owner": "devtools@apollo.io",
+      "description": "Turn an ideal-customer profile into a ranked and enriched lead list.",
+      "triggers": ["prospect", "ideal customer", "icp", "decision makers", "lead list", "find people", "find companies"],
+      "required_tools": ["apollo_mixed_companies_search", "apollo_users_api_profile", "apollo_organizations_bulk_enrich", "apollo_mixed_people_api_search", "apollo_people_bulk_match", "apollo_contacts_create"],
+      "credit_behavior": "exact-confirmation-with-balance-before-batch-enrichment",
+      "write_behavior": "confirmation-before-contact-create",
+      "supported_surfaces": ["generic", "claude", "cursor", "codex", "copilot"]
+    },
+    {
+      "id": "sequence-load",
+      "path": "skills/sequence-load",
+      "version": "0.3.0",
+      "visibility": "public",
+      "owner": "devtools@apollo.io",
+      "description": "Find, enrich, create, and enroll contacts into an Apollo sequence.",
+      "triggers": ["sequence", "enroll", "load contacts", "outreach", "campaign", "add leads"],
+      "required_tools": ["apollo_emailer_campaigns_search", "apollo_email_accounts_index", "apollo_mixed_people_api_search", "apollo_users_api_profile", "apollo_people_bulk_match", "apollo_contacts_create", "apollo_emailer_campaigns_add_contact_ids", "apollo_emailer_campaigns_remove_or_stop_contact_ids"],
+      "credit_behavior": "exact-confirmation-with-balance-before-batch-enrichment",
+      "write_behavior": "confirmation-before-enrollment",
+      "supported_surfaces": ["generic", "claude", "cursor", "codex", "copilot"]
+    }
+  ]
+}
