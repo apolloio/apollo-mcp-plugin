@@ -1,0 +1,105 @@
+{
+  "catalog_version": "0.2.0",
+  "status_definitions": {
+    "experimental": "Packaging exists, but this release has not completed a clean-client install, discovery, invocation, update, and removal smoke test.",
+    "planned": "The platform has a documented skill mechanism, but this repository does not yet publish a verified adapter for it."
+  },
+  "platforms": {
+    "claude_code": {
+      "label": "Claude Code",
+      "status": "experimental",
+      "discovery": "Existing Claude plugin manifest; clean-client discovery is not verified in this release.",
+      "installation": "Client-managed plugin installation.",
+      "destination_scope": "Claude plugin-managed; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp.",
+      "verification": "Pending install, discovery, invocation, update, and removal smoke test.",
+      "update_removal": "Use Claude plugin lifecycle controls after verification.",
+      "rollback": "Restore the prior 0.1.1 Claude plugin package.",
+      "official_documentation_url": "https://docs.anthropic.com/en/docs/claude-code"
+    },
+    "claude_cowork": {
+      "label": "Claude Cowork",
+      "status": "experimental",
+      "discovery": "Existing Claude marketplace manifest; clean-client discovery is not verified in this release.",
+      "installation": "Client-managed marketplace installation.",
+      "destination_scope": "Cowork plugin-managed; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp.",
+      "verification": "Pending install, discovery, invocation, update, and removal smoke test.",
+      "update_removal": "Use Cowork plugin lifecycle controls after verification.",
+      "rollback": "Restore the prior 0.1.1 Claude plugin package.",
+      "official_documentation_url": "https://docs.anthropic.com/en/docs/claude-code"
+    },
+    "cursor": {
+      "label": "Cursor",
+      "status": "experimental",
+      "discovery": "Existing Cursor plugin manifest; clean-client discovery is not verified in this release.",
+      "installation": "Client-managed plugin installation.",
+      "destination_scope": "Cursor plugin-managed; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp.",
+      "verification": "Pending install, discovery, invocation, update, and removal smoke test.",
+      "update_removal": "Use Cursor plugin lifecycle controls after verification.",
+      "rollback": "Restore the prior 0.1.1 Cursor plugin package.",
+      "official_documentation_url": "https://cursor.com/docs/plugins"
+    },
+    "codex": {
+      "label": "Codex",
+      "status": "planned",
+      "discovery": "No Codex plugin adapter is published by this repository.",
+      "installation": "Not available from this release.",
+      "destination_scope": "Future Codex-managed plugin; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp after an adapter is installed.",
+      "verification": "Requires a separate adapter PR and clean-client lifecycle smoke test.",
+      "update_removal": "Not available until the adapter is verified.",
+      "rollback": "No Codex adapter is published.",
+      "official_documentation_url": "https://learn.chatgpt.com/docs/build-plugins"
+    },
+    "copilot": {
+      "label": "GitHub Copilot",
+      "status": "planned",
+      "discovery": "No Copilot skill adapter is published by this repository.",
+      "installation": "Not available from this release.",
+      "destination_scope": "Future project or personal skill directory; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp after MCP configuration.",
+      "verification": "Requires a separate adapter PR and clean-client lifecycle smoke test.",
+      "update_removal": "Not available until the adapter is verified.",
+      "rollback": "No Copilot adapter is published.",
+      "official_documentation_url": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
+    },
+    "replit": {
+      "label": "Replit",
+      "status": "planned",
+      "discovery": "No Replit skill adapter is published by this repository.",
+      "installation": "Not available from this release.",
+      "destination_scope": "Future project .agents/skills adapter; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp after MCP configuration.",
+      "verification": "Requires a separate adapter PR and clean-client lifecycle smoke test.",
+      "update_removal": "Not available until the adapter is verified.",
+      "rollback": "No Replit adapter is published.",
+      "official_documentation_url": "https://docs.replit.com/references/agent/skills"
+    },
+    "rovo_dev": {
+      "label": "Rovo Dev CLI",
+      "status": "planned",
+      "discovery": "No Rovo Dev skill adapter is published by this repository.",
+      "installation": "Not available from this release.",
+      "destination_scope": "Future project or user skill directory; all five public skills.",
+      "mcp_authentication": "OAuth to https://mcp.apollo.io/mcp after MCP configuration.",
+      "verification": "Requires a separate adapter PR and clean-client lifecycle smoke test.",
+      "update_removal": "Not available until the adapter is verified.",
+      "rollback": "No Rovo Dev adapter is published.",
+      "official_documentation_url": "https://support.atlassian.com/rovo/docs/extend-rovo-dev-cli-with-agent-skills/"
+    },
+    "perplexity_computer": {
+      "label": "Perplexity Computer",
+      "status": "planned",
+      "discovery": "No Perplexity upload bundle is published by this repository.",
+      "installation": "Not available from this release.",
+      "destination_scope": "Future custom-skill upload; all five public skills.",
+      "mcp_authentication": "Apollo MCP connectivity must be verified separately from skill upload.",
+      "verification": "Requires a separate adapter PR and upload, discovery, invocation, update, and removal smoke test.",
+      "update_removal": "Not available until the adapter is verified.",
+      "rollback": "No Perplexity adapter is published.",
+      "official_documentation_url": "https://www.perplexity.ai/help-center/en/articles/13914413-how-to-use-computer-skills"
+    }
+  }
+}

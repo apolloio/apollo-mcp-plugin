@@ -1,90 +1,64 @@
 ---
 name: prospect
-description: "Full ICP-to-leads pipeline. Describe your ideal customer in plain English and get a ranked table of enriched decision-maker leads with emails and phone numbers."
-user-invocable: true
-argument-hint: [describe your ideal customer]
+description: "Find and rank Apollo prospects from an ideal customer profile with search-first results and staged approvals. Use when building a lead list, finding decision makers, refining an ICP, enriching selected people, or saving prospects."
 ---
 
 # Prospect
 
-Go from an ICP description to a ranked, enriched lead list in one shot. The user describes their ideal customer via "$ARGUMENTS".
+Turn an ideal customer profile into a ranked search-only shortlist. Spend credits, reveal private contact data, and write contacts only for user-selected rows after separate approvals.
 
-## Examples
+## 1. Parse the ICP
 
-- `/apollo:prospect VP of Engineering at Series B+ SaaS companies in the US, 200-1000 employees`
-- `/apollo:prospect heads of marketing at e-commerce companies in Europe`
-- `/apollo:prospect CTOs at fintech startups, 50-500 employees, New York`
-- `/apollo:prospect procurement managers at manufacturing companies with 1000+ employees`
-- `/apollo:prospect SDR leaders at companies using Salesforce and Outreach`
+Extract role or title, seniority, industry, employee range, company or person geography, domains, technologies, funding signals, and requested volume. Default to 10 results when no count is given.
 
-## Step 1 — Parse the ICP
+If a role plus at least one account signal is present, make one concise, correctable assumption and proceed. If neither a role nor an account signal is present, ask one clarifying question.
 
-Extract structured filters from the natural language description in "$ARGUMENTS":
+## 2. Search and Rank
 
-**Company filters:**
-- Industry/vertical keywords → `q_organization_keyword_tags`
-- Employee count ranges → `organization_num_employees_ranges`
-- Company locations → `organization_locations`
-- Specific domains → `q_organization_domains_list`
+Use `apollo_mixed_people_api_search` for people. Use `apollo_mixed_companies_search` only when company discovery is necessary and the visible tool description supports the requested filters.
 
-**Person filters:**
-- Job titles → `person_titles`
-- Seniority levels → `person_seniorities`
-- Person locations → `person_locations`
+People search is read-only. Before every `apollo_mixed_companies_search` call, explain its one-credit-per-nonempty-request cost and ask exactly:
 
-If the ICP is vague, ask 1-2 clarifying questions before proceeding. At minimum, you need a title/role and an industry or company size.
+```text
+This will consume 1 credit. Do you want to proceed?
+```
 
-## Step 2 — Search for Companies
+Do not run organization search until the user agrees to that separate credit step. Show name or masked name, title, company, location, fit level, and fit reason. Do not include private emails, phones, or unnecessary internal identifiers.
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_companies_search` with the company filters:
-- `q_organization_keyword_tags` for industry/vertical
-- `organization_num_employees_ranges` for size
-- `organization_locations` for geography
-- Set `per_page` to 25
+Rank as Strong, Good, or Partial based on title, seniority, account fit, geography, and other requested signals. State filters, assumptions, result count, and that the shortlist is search-only.
 
-## Step 3 — Enrich Top Companies
+## 3. Confirm Selected Enrichment
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_bulk_enrich` with the domains from the top 10 results. This reveals revenue, funding, headcount, and firmographic data to help rank companies.
+Use `apollo_users_api_profile` to obtain the current credit balance when available. Before `apollo_people_bulk_match`, preview the selected count, maximum charge, and returned balance. Replace the placeholder and ask exactly:
 
-## Step 4 — Find Decision Makers
+```text
+This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?
+```
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with:
-- `person_titles` and `person_seniorities` from the ICP
-- `q_organization_domains_list` scoped to the enriched company domains
-- `per_page` set to 25
+Do not enrich unselected rows. If the balance is unavailable, say so rather than estimating it. Credit approval does not approve private-data reveal, contact writes, or sequencing.
 
-## Step 5 — Enrich Top Leads
+## 4. Confirm Private-Data Reveal
 
-> **Credit warning**: Tell the user exactly how many credits will be consumed before proceeding.
+Before requesting reveal options or displaying private contact fields, preview the selected count and ask exactly:
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` to enrich up to 10 leads per call with:
-- `first_name`, `last_name`, `domain` for each person
-- `reveal_personal_emails` set to `true`
+```text
+This will reveal private contact data for [N] selected people. Do you want me to reveal it now?
+```
 
-If more than 10 leads, batch into multiple calls.
+For personal-email reveal, keep this approval separate and then repeat the exact bulk-enrichment credit confirmation immediately before the call. Phone reveal instead requires one combined confirmation; do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, ask exactly:
 
-## Step 6 — Present the Lead Table
+```text
+This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?
+```
 
-Show results in a ranked table:
+Phone enrichment is asynchronous. After the confirmed `apollo_people_bulk_match` call, take only its top-level `request_id`, wait about 10 seconds, and call `apollo_webhook_result_show`. If a not-ready response includes `retry_after_seconds` without a terminal error code, wait that interval and retry, up to about five attempts. Do not claim that phone numbers were returned until polling succeeds; if retries are exhausted, report that the reveal is still processing.
 
-### Leads matching: [ICP Summary]
+## 5. Confirm Contact Writes
 
-| # | Name | Title | Company | Employees | Revenue | Email | Phone | ICP Fit |
-|---|---|---|---|---|---|---|---|---|
+If the user asks to save selected prospects through `apollo_contacts_bulk_create`, preview the exact count and fields and explain that deduplication will be enabled, then ask exactly:
 
-**ICP Fit** scoring:
-- **Strong** — title, seniority, company size, and industry all match
-- **Good** — 3 of 4 criteria match
-- **Partial** — 2 of 4 criteria match
+```text
+This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?
+```
 
-**Summary**: Found X leads across Y companies. Z credits consumed.
-
-## Step 7 — Offer Next Actions
-
-Ask the user:
-
-1. **Save all to Apollo** — Bulk-create contacts via `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with `run_dedupe: true` for each lead
-2. **Load into a sequence** — Ask which sequence and run the sequence-load flow for these contacts
-3. **Deep-dive a company** — Run `/apollo:company-intel` on any company from the list
-4. **Refine the search** — Adjust filters and re-run
-5. **Export** — Format leads as a CSV-style table for easy copy-paste
+Do not infer write approval from enrichment or reveal approval. Submit the confirmed contacts as one bulk request. After any confirmed action, return the updated shortlist with per-row status, actual or expected credits, and errors. Route sequence requests to `sequence-load`; do not enroll contacts from this workflow.

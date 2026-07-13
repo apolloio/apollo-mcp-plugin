@@ -1,0 +1,78 @@
+{
+  "catalog_version": "0.2.0",
+  "skills": [
+    {
+      "id": "onboarding",
+      "path": "skills/onboarding",
+      "visibility": "public",
+      "summary": "Verify an Apollo MCP connection and route the user to a safe public workflow.",
+      "required_tools": [
+        "apollo_users_api_profile"
+      ],
+      "credit_behavior": "none",
+      "write_behavior": "read-only"
+    },
+    {
+      "id": "analytics",
+      "path": "skills/analytics",
+      "visibility": "public",
+      "summary": "Answer sales performance questions with read-only Apollo analytics reports.",
+      "required_tools": [
+        "apollo_analytics_sync_report",
+        "apollo_emailer_campaigns_search"
+      ],
+      "credit_behavior": "none",
+      "write_behavior": "read-only"
+    },
+    {
+      "id": "enrich-lead",
+      "path": "skills/enrich-lead",
+      "visibility": "public",
+      "summary": "Resolve and enrich one lead with separate approvals for credits, private data, and contact writes.",
+      "required_tools": [
+        "apollo_mixed_people_api_search",
+        "apollo_people_match",
+        "apollo_organizations_enrich",
+        "apollo_webhook_result_show",
+        "apollo_contacts_create"
+      ],
+      "credit_behavior": "confirmation-before-each-credit-action",
+      "write_behavior": "separate-confirmation-before-contact-write"
+    },
+    {
+      "id": "prospect",
+      "path": "skills/prospect",
+      "visibility": "public",
+      "summary": "Build a ranked search-first prospect list and gate enrichment, private data, and saves.",
+      "required_tools": [
+        "apollo_mixed_people_api_search",
+        "apollo_mixed_companies_search",
+        "apollo_users_api_profile",
+        "apollo_people_bulk_match",
+        "apollo_webhook_result_show",
+        "apollo_contacts_bulk_create"
+      ],
+      "credit_behavior": "confirmation-with-count-before-credit-action",
+      "write_behavior": "separate-confirmation-before-contact-write"
+    },
+    {
+      "id": "sequence-load",
+      "path": "skills/sequence-load",
+      "visibility": "public",
+      "summary": "Prepare and enroll contacts with separate gates for every credit, data, write, enrollment, and sending stage.",
+      "required_tools": [
+        "apollo_emailer_campaigns_search",
+        "apollo_email_accounts_index",
+        "apollo_mixed_people_api_search",
+        "apollo_users_api_profile",
+        "apollo_people_bulk_match",
+        "apollo_webhook_result_show",
+        "apollo_contacts_bulk_create",
+        "apollo_emailer_campaigns_add_contact_ids",
+        "apollo_emailer_campaigns_remove_or_stop_contact_ids"
+      ],
+      "credit_behavior": "confirmation-with-count-before-credit-action",
+      "write_behavior": "separate-confirmations-for-contact-write-enrollment-activation-and-send"
+    }
+  ]
+}

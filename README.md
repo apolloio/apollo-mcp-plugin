@@ -1,163 +1,51 @@
-# Apollo Plugin for Claude Code and Cowork
+# Apollo Public Skills v0.2.0
 
-Prospect, enrich leads, and add to outreach sequences with [Apollo.io](https://www.apollo.io/) MCP Server
-- Fast to install.
-- Powerful in execution.
-- Designed for real GTM workflows.
+This repository is the canonical public source for five Apollo MCP workflow skills. The maintained source for each workflow is `skills/<id>/SKILL.md`; `catalog/skills.json` records its public metadata and tool dependencies.
 
----
+## Public Inventory
 
-## 🔌 One-Click MCP Server Integration
+| Skill | Purpose | Safety boundary |
+|---|---|---|
+| `onboarding` | Verify an Apollo connection and choose a workflow | Read-only verification |
+| `analytics` | Answer sales performance questions | Read-only reporting |
+| `enrich-lead` | Resolve and enrich one lead | Separate credit, private-data, and contact-write approvals |
+| `prospect` | Turn an ICP into a ranked shortlist | Search first; separate enrichment, reveal, and write approvals |
+| `sequence-load` | Prepare and enroll selected contacts | Separate credit, reveal, contact-write, enrollment, activation, and send approvals |
 
-This plugin automatically configures the Apollo MCP Server when installed.
-No manual server setup or config files.
-Install the plugin, authenticate with Apollo, and run `/apollo:*` commands.
+The skills disclose only the next decision the user needs to make. Read-only discovery and previews come before credit use, private-data reveal, or any write.
 
----
+## Packaging Scope
 
-## ✅ Powerful Skills
+The skill directories are the canonical public workflow source. The checked-in `.claude-plugin/`, `.cursor-plugin/`, and `.mcp.json` manifests remain the unchanged `0.1.1` Claude and Cursor packaging from the base release. The `0.2.0` skills catalog does not update those manifests or claim that every listed platform can currently load this repository.
 
-High-value skills that chain multiple Apollo APIs into complete workflows:
+Platform status is tracked in `catalog/platform-support.json`:
 
-| Skill | What it does |
+| Platform | Status |
 |---|---|
-| `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email and get a full contact card with company context and next actions |
-| `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers |
-| `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment |
-| `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data |
+| Claude Code, Cowork, Cursor | Experimental |
+| Codex, GitHub Copilot, Replit, Rovo Dev CLI, Perplexity Computer | Planned |
 
+`experimental` means packaging exists but the complete clean-client lifecycle smoke test is still pending. `planned` is a roadmap signal, not a runtime or installation claim. The support catalog records discovery, destination, authentication, verification, update/removal, and rollback expectations for each platform. Actual tool availability, permissions, plan limits, and credit behavior come from the Apollo MCP server and the connected client.
 
-### `/apollo:enrich-lead`
+## Safety Model
 
-Best for: one-off enrichment and fast lead lookups. <br>
-Input: name, company, LinkedIn URL, or email <br>
-Output: enriched profile (role, location, company context) and suggested next steps
+- Search and preview before requesting credit-consuming detail.
+- Ask separately before revealing private contact data.
+- Ask separately before creating Apollo contacts with deduplication.
+- Treat sequence enrollment as a distinct live-outreach write.
+- Treat sequence activation and direct sending as later, separate decisions.
+- Stop when a required capability is unavailable; do not invent results or client commands.
 
-### `/apollo:prospect`
-Best for: turning an ICP into a shortlist fast. <br>
-Input: ICP description (industry, size, geography, titles) <br>
-Output: ranked lead table with enriched decision-makers
+## Validation
 
-### `/apollo:sequence-load`
-Best for: taking action on a list. <br>
-Input: targeting criteria + target sequence <br>
-Output: preview of candidates, enrichment + dedupe, then bulk enrollment into the sequence
+Run the dependency-free repository check with:
 
-### `/apollo:analytics`
-Best for: answering performance questions without opening a dashboard. <br>
-Input: any question about emails, calls, meetings, tasks, opportunities, sequences, or conversation intelligence <br>
-Output: formatted tables with real Apollo data, broken down by rep, team, time, sequence, stage, or any other dimension
-
-
-Important: sequence enrollment may trigger outbound depending on your sequence settings and sending configuration.
-
----
-
-## 🧠 Model Recommendations (Quality-First)
-
-Recommended: Opus (best quality)
-
-Use Opus when you want the strongest reasoning and the most reliable multi-step tool orchestration.
-
-- Best for: prospecting workflows, ambiguous matches, multi-step chaining, and anything high-stakes
-- Tradeoff: higher latency and higher model usage cost on the Anthropic side
-
-### Strong fallback: Sonnet (faster)
-
-Use Sonnet when you want speed for quick lookups, smaller jobs, or rapid iteration.
-
-- Best for: quick searches, lightweight enrichment, and tight loops
-- Tradeoff: may require more user guidance for complex multi-step workflows
-
-In Claude Code, you can switch models via `/model`.
-
-
----
-
-## 📦 Installation
-
-### Cowork
-
-Click the link below to install in one step:
-
-[Install in Cowork](https://claude.ai/desktop/customize/plugins/new?marketplace=apolloio/apollo-mcp-plugin&plugin=apollo)
-
-Then restart Cowork to ensure the MCP server starts correctly.
-
-### Claude Code
-
-#### 1. Add this plugin's marketplace
-
-In Claude Code, run:
-
-```
-/plugin marketplace add apolloio/apollo-mcp-plugin
+```text
+node scripts/validate-skills.mjs
 ```
 
-#### 2. Install the plugin
-
-```
-/plugin install apollo@apollo-plugin-marketplace
-```
-
-#### 3. Restart Claude Code
-
-This ensures the MCP server starts correctly.
-
-### Cursor
-
-1. Open Cursor and go to the Plugin Marketplace
-2. Search for "Apollo" and install
-3. Authenticate with your Apollo.io account when prompted
-
----
-
-## 🔑 Authentication
-
-The Apollo MCP Server supports **OAuth**:
-
-1. After installation, run `/mcp` in Claude Code or `connect` to Apollo.io connector from settings
-2. Select the **Apollo** server and click **Authenticate**
-3. Complete the Apollo.io login in your browser
-4. Done — all commands are now ready to use
-
----
-
-## **⚠️** Apollo Credits and Safety
-
-Some operations consume Apollo credits:
-
-- People enrichment typically costs 1 credit per person
-- Bulk enrichment consumes credits based on how many people are enriched
-
-This plugin is designed to warn and request confirmation before credit-consuming actions by default.
-
-Sequence safety:
-
-- Adding contacts to a sequence can enroll them into an active sequence
-- Depending on your sequence settings, outbound may start automatically
-- Always verify your sequence name, sending account, and enrollment volume before confirming
-
----
-
-## Quickstart Examples
-
-Try these in Claude:
-
-- “Enrich this lead: [https://www.linkedin.com/in/…”](https://www.linkedin.com/in/%E2%80%A6%E2%80%9D)
-- “Find 25 VP Sales at SaaS companies (200-1000 employees) that raised funding in the last 6 months.”
-- “Load the top 10 enriched leads into my sequence called ‘Q1 Enterprise Outbound’ and show me a preview before enrolling.”
-- “Show me email and call performance by rep for this quarter, sorted by calls made.”
-
----
-
-## 🙌 Credits
-
-- **MCP Server** by [Apollo.io](https://docs.apollo.io/)
-- **Plugin Specification** by [Anthropic](https://docs.anthropic.com/)
-
----
+It validates the exact public inventory, catalog structure, frontmatter, encoding, leakage rules, declared tool references, platform statuses, and staged safety language.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT. See `LICENSE`.
