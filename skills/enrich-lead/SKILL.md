@@ -15,19 +15,11 @@ Do not show private email addresses or phone numbers during search-only review. 
 
 ## 2. Confirm Credit Use
 
-Use `apollo_people_match` only after showing the selected identity. For a match without phone reveal, replace the placeholder and ask exactly:
-
-```text
-Enriching [name] will use 1 credit (no charge if not found). Do you want to proceed?
-```
+Use `apollo_people_match` only after showing the selected identity. Immediately before the call, use the exact credit-confirmation wording required by the current tool description, replacing its placeholders with the selected person.
 
 Do not enrich until the user explicitly agrees to that credit step. Credit approval does not approve private-data reveal or a contact write.
 
-For optional company context from `apollo_organizations_enrich`, replace the placeholder and ask its separate exact question:
-
-```text
-Enriching [domain] will consume 1 credit (no charge if not found). Do you want to proceed?
-```
+For optional company context from `apollo_organizations_enrich`, ask the separate exact confirmation required by that tool's current description.
 
 ## 3. Confirm Private-Data Reveal
 
@@ -39,13 +31,7 @@ This will reveal private contact data for [N] selected people. Do you want me to
 
 Do not reveal those fields without an explicit answer to this separate question. The match still requires the exact 1-credit confirmation immediately before the call. A prior enrichment approval is not reveal approval.
 
-Phone reveal follows the tool's combined confirmation rule. Do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, replace the placeholder and ask exactly:
-
-```text
-Enriching [name] will use 1 credit, plus additional credits if the phone number is successfully revealed (no charge if the number isn't found). Do you want to proceed?
-```
-
-Phone enrichment is asynchronous. After the confirmed `apollo_people_match` call, take only its top-level `request_id`, wait about 10 seconds, and call `apollo_webhook_result_show`. If a not-ready response includes `retry_after_seconds` without a terminal error code, wait that interval and retry, up to about five attempts. Do not claim that a phone number was returned until polling succeeds; if retries are exhausted, report that the reveal is still processing.
+Request phone reveal only when the visible `apollo_people_match` schema supports it. Follow that tool's exact confirmation and asynchronous polling instructions, including the documented request-ID field and polling tool. Do not assume a top-level or nested ID, and do not invent a polling tool. If the complete reveal-and-poll contract is unavailable, report that phone reveal is unsupported. Do not claim that a phone number was returned until the documented polling flow succeeds.
 
 ## 4. Present the Result
 
@@ -53,10 +39,10 @@ Show only returned and approved fields: name, title, company, location, profile 
 
 ## 5. Confirm Contact Writes
 
-If the user asks to save the lead, preview the exact fields and explain that deduplication will be enabled. Use `apollo_contacts_create` only after asking exactly:
+If the user asks to save the lead, preview the exact fields. Use `apollo_contacts_create` only after asking:
 
 ```text
-This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?
+This will write [N] Apollo contact records with duplicate prevention enabled. Do you want me to make that contact write now?
 ```
 
-Do not treat enrichment, reveal, or sequencing intent as contact-write approval. Set `run_dedupe: true`, summarize the result after a confirmed write, and report any dedupe outcome, skipped field, or server error.
+Do not treat enrichment, reveal, or sequencing intent as contact-write approval. Set `run_dedupe: true`, summarize the result after a confirmed write, and report the returned create, skip, duplicate, or error outcome without assuming an update occurred.

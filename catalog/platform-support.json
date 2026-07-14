@@ -26,10 +26,10 @@
         "official_documentation_url": "https://docs.apollo.io/docs/apollo-mcp"
       },
       "skill_delivery": {
-        "status": "guidance_only",
+        "status": "planned",
         "discovery": "Installing the connector does not prove that these five public skills are installed or discoverable.",
         "installation": "Not available from this release.",
-        "destination_scope": "No verified ChatGPT skill destination is published by this repository.",
+        "destination_scope": "ChatGPT skill upload is documented, but no verified Apollo adapter is published by this repository.",
         "verification": "Requires a clean-client connector and skill-discovery smoke test.",
         "update_removal": "Use platform-managed controls after a delivery path is verified.",
         "rollback": "No ChatGPT skill adapter is published.",
@@ -96,9 +96,9 @@
     "cursor": {
       "label": "Cursor",
       "mcp_connection": {
-        "status": "standalone_documented",
-        "availability": "Apollo documents connecting Cursor to the standalone remote MCP server.",
-        "authentication": "OAuth to https://mcp.apollo.io/mcp.",
+        "status": "first_party_connector",
+        "availability": "Apollo documents a first-party Cursor connector outside this repository.",
+        "authentication": "OAuth through the Apollo connector.",
         "official_documentation_url": "https://docs.apollo.io/docs/apollo-mcp"
       },
       "skill_delivery": {

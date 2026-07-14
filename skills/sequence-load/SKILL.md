@@ -37,17 +37,17 @@ For personal-email reveal, do not reveal those fields until separately confirmed
 This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?
 ```
 
-Phone enrichment is asynchronous. After the confirmed `apollo_people_bulk_match` call, take only its top-level `request_id`, wait about 10 seconds, and call `apollo_webhook_result_show`. If a not-ready response includes `retry_after_seconds` without a terminal error code, wait that interval and retry, up to about five attempts. Do not claim that phone numbers were returned until polling succeeds; if retries are exhausted, report that the reveal is still processing.
+Request phone reveal only when the visible `apollo_people_bulk_match` schema supports it. Follow that tool's exact confirmation and asynchronous polling instructions, including the documented request-ID field and polling tool. Do not assume a top-level or nested ID, and do not invent a polling tool. If the complete reveal-and-poll contract is unavailable, report that phone reveal is unsupported. Do not claim that phone numbers were returned until the documented polling flow succeeds.
 
 ## 4. Confirm Contact Writes
 
-Preview the contacts and fields that `apollo_contacts_bulk_create` would create or update with deduplication enabled. Then ask exactly:
+Preview the contacts and fields that `apollo_contacts_bulk_create` would create, warn that the bulk tool may create a new record for every submitted item, and ask:
 
 ```text
-This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?
+This will create [N] Apollo contact records. Duplicate handling depends on the active Apollo tool contract. Do you want me to make that contact write now?
 ```
 
-Do not create or update contacts until this write is confirmed. Submit the confirmed contacts as one bulk request and report dedupe outcomes before enrollment.
+Do not create contacts until this write is confirmed. Review the input for duplicates before submitting one bulk request, then report the returned outcomes before enrollment.
 
 ## 5. Confirm Sequence Enrollment
 

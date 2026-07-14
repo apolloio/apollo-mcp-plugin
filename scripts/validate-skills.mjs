@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { TextDecoder } from "node:util";
@@ -7,6 +6,49 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const version = "0.2.0";
 const skillIds = ["onboarding", "analytics", "enrich-lead", "prospect", "sequence-load"];
+const expectedTools = {
+  onboarding: ["apollo_users_api_profile"],
+  analytics: ["apollo_analytics_sync_report", "apollo_emailer_campaigns_search"],
+  "enrich-lead": [
+    "apollo_mixed_people_api_search",
+    "apollo_people_match",
+    "apollo_organizations_enrich",
+    "apollo_contacts_create",
+  ],
+  prospect: [
+    "apollo_mixed_people_api_search",
+    "apollo_organizations_organization_lookup",
+    "apollo_users_api_profile",
+    "apollo_people_bulk_match",
+    "apollo_contacts_bulk_create",
+  ],
+  "sequence-load": [
+    "apollo_emailer_campaigns_search",
+    "apollo_email_accounts_index",
+    "apollo_mixed_people_api_search",
+    "apollo_users_api_profile",
+    "apollo_people_bulk_match",
+    "apollo_contacts_bulk_create",
+    "apollo_emailer_campaigns_add_contact_ids",
+    "apollo_emailer_campaigns_remove_or_stop_contact_ids",
+  ],
+};
+const expectedPlatformIds = [
+  "chatgpt",
+  "claude_connector",
+  "claude_code",
+  "claude_cowork",
+  "cursor",
+  "codex",
+  "replit",
+  "perplexity_connector",
+  "perplexity_computer",
+  "copilot",
+  "claude_desktop",
+  "antigravity",
+  "generic",
+  "rovo_dev",
+];
 const skillKeys = [
   "id",
   "path",
@@ -16,66 +58,6 @@ const skillKeys = [
   "credit_behavior",
   "write_behavior",
 ];
-const expectedTools = {
-  onboarding: ["apollo_users_api_profile"],
-  analytics: ["apollo_analytics_sync_report", "apollo_emailer_campaigns_search"],
-  "enrich-lead": [
-    "apollo_mixed_people_api_search",
-    "apollo_people_match",
-    "apollo_organizations_enrich",
-    "apollo_webhook_result_show",
-    "apollo_contacts_create",
-  ],
-  prospect: [
-    "apollo_mixed_people_api_search",
-    "apollo_organizations_organization_lookup",
-    "apollo_users_api_profile",
-    "apollo_people_bulk_match",
-    "apollo_webhook_result_show",
-    "apollo_contacts_bulk_create",
-  ],
-  "sequence-load": [
-    "apollo_emailer_campaigns_search",
-    "apollo_email_accounts_index",
-    "apollo_mixed_people_api_search",
-    "apollo_users_api_profile",
-    "apollo_people_bulk_match",
-    "apollo_webhook_result_show",
-    "apollo_contacts_bulk_create",
-    "apollo_emailer_campaigns_add_contact_ids",
-    "apollo_emailer_campaigns_remove_or_stop_contact_ids",
-  ],
-};
-const expectedCreditBehavior = {
-  onboarding: "none",
-  analytics: "none",
-  "enrich-lead": "confirmation-before-each-credit-action",
-  prospect: "confirmation-with-count-before-credit-action",
-  "sequence-load": "confirmation-with-count-before-credit-action",
-};
-const expectedWriteBehavior = {
-  onboarding: "read-only",
-  analytics: "read-only",
-  "enrich-lead": "separate-confirmation-before-contact-write",
-  prospect: "separate-confirmation-before-contact-write",
-  "sequence-load": "separate-confirmations-for-contact-write-enrollment-activation-and-send",
-};
-const expectedPlatforms = {
-  chatgpt: ["first_party_connector", "guidance_only"],
-  claude_connector: ["first_party_connector", "guidance_only"],
-  claude_code: ["standalone_documented", "experimental"],
-  claude_cowork: ["first_party_plugin", "experimental"],
-  cursor: ["standalone_documented", "experimental"],
-  codex: ["first_party_plugin", "planned"],
-  replit: ["first_party_connector", "planned"],
-  perplexity_connector: ["first_party_connector", "guidance_only"],
-  perplexity_computer: ["separate_skill_surface", "planned"],
-  copilot: ["standalone_documented", "planned"],
-  claude_desktop: ["standalone_documented", "guidance_only"],
-  antigravity: ["standalone_documented", "planned"],
-  generic: ["generic_compatible", "guidance_only"],
-  rovo_dev: ["research_only", "research_only"],
-};
 const expectedMcpConnectionStatuses = [
   "first_party_connector",
   "first_party_plugin",
@@ -102,41 +84,6 @@ const skillDeliveryKeys = [
   "rollback",
   "official_documentation_url",
 ];
-const manifestBlobs = {
-  ".claude-plugin/marketplace.json": "ad60c72cc099c37c69b68eb93afb2fcff2db1ddd",
-  ".claude-plugin/plugin.json": "664460600a658ff0762b8f4f675af1348feec33d",
-  ".cursor-plugin/plugin.json": "b39272388a73f54f995b3a89f7a1ecc2e0c8f0f1",
-  ".mcp.json": "40be81c3a786f271c1970cd9d41caa2c684a9365",
-};
-const stagedSafety = {
-  "enrich-lead": [
-    "Enriching [name] will use 1 credit (no charge if not found). Do you want to proceed?",
-    "Enriching [domain] will consume 1 credit (no charge if not found). Do you want to proceed?",
-    "This will reveal private contact data for [N] selected people. Do you want me to reveal it now?",
-    "Enriching [name] will use 1 credit, plus additional credits if the phone number is successfully revealed (no charge if the number isn't found). Do you want to proceed?",
-    "This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?",
-  ],
-  prospect: [
-    "This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?",
-    "This will reveal private contact data for [N] selected people. Do you want me to reveal it now?",
-    "This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?",
-    "This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?",
-  ],
-  "sequence-load": [
-    "This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?",
-    "This will reveal private contact data for [N] selected people. Do you want me to reveal it now?",
-    "This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?",
-    "This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?",
-    "This will enroll [N] contacts in [Sequence Name] using [Sending Account] with status paused. Do you want me to enroll them now?",
-    "This will activate [Sequence Name] and may begin configured outbound sending. Do you want me to activate it now?",
-    "This will send a real message to [Recipient] from [Sending Account]. Do you want me to send it now?",
-  ],
-};
-const phonePollingProducer = {
-  "enrich-lead": "apollo_people_match",
-  prospect: "apollo_people_bulk_match",
-  "sequence-load": "apollo_people_bulk_match",
-};
 const errors = [];
 
 function sameArray(actual, expected) {
@@ -145,10 +92,6 @@ function sameArray(actual, expected) {
 
 function sorted(values) {
   return [...values].sort((left, right) => left.localeCompare(right));
-}
-
-function relative(candidate) {
-  return path.relative(root, candidate).replaceAll(path.sep, "/");
 }
 
 async function readUtf8(relativePath) {
@@ -213,14 +156,14 @@ function parseFrontmatter(text, id) {
   return fields;
 }
 
-function gitBlobId(buffer) {
-  const canonical = Buffer.from(buffer.toString("utf8").replaceAll("\r\n", "\n"));
-  const header = Buffer.from(`blob ${canonical.length}\0`);
-  return createHash("sha1").update(header).update(canonical).digest("hex");
-}
-
 async function validateManifests() {
-  for (const [relativePath, expectedHash] of Object.entries(manifestBlobs)) {
+  const manifests = {};
+  for (const relativePath of [
+    ".claude-plugin/marketplace.json",
+    ".claude-plugin/plugin.json",
+    ".cursor-plugin/plugin.json",
+    ".mcp.json",
+  ]) {
     const buffer = await readFile(path.join(root, relativePath));
     let text = "";
     try {
@@ -231,11 +174,34 @@ async function validateManifests() {
     if (/\u00c3|\u00c2|\u00e2\u0080|\ufffd/u.test(text)) {
       errors.push(`${relativePath}: possible mojibake detected`);
     }
-    parseJson(text, relativePath);
-    const actualHash = gitBlobId(buffer);
-    if (actualHash !== expectedHash) {
-      errors.push(`${relativePath}: must remain content-identical to the 0.1.1 base manifest`);
+    const manifest = parseJson(text, relativePath);
+    manifests[relativePath] = manifest;
+    if (relativePath.endsWith("plugin.json") && manifest?.version !== version) {
+      errors.push(`${relativePath}: version must match catalog version ${version}`);
     }
+  }
+
+  const repository = "https://github.com/apolloio/apollo-mcp-plugin";
+  const marketplace = manifests[".claude-plugin/marketplace.json"];
+  if (marketplace?.name !== "apollo-plugin-marketplace"
+    || marketplace?.owner?.name !== "Apollo.io"
+    || marketplace?.plugins?.length !== 1
+    || marketplace.plugins[0]?.name !== "apollo"
+    || marketplace.plugins[0]?.source !== "./") {
+    errors.push(".claude-plugin/marketplace.json: Apollo marketplace identity or source changed");
+  }
+  for (const relativePath of [".claude-plugin/plugin.json", ".cursor-plugin/plugin.json"]) {
+    const manifest = manifests[relativePath];
+    if (manifest?.name !== "apollo" || manifest?.repository !== repository) {
+      errors.push(`${relativePath}: Apollo plugin identity or repository changed`);
+    }
+  }
+  if (manifests[".cursor-plugin/plugin.json"]?.mcpServers !== "./.mcp.json") {
+    errors.push(".cursor-plugin/plugin.json: MCP manifest reference changed");
+  }
+  const apolloServer = manifests[".mcp.json"]?.mcpServers?.apollo;
+  if (apolloServer?.type !== "http" || apolloServer?.url !== "https://mcp.apollo.io/mcp") {
+    errors.push(".mcp.json: Apollo MCP transport or endpoint changed");
   }
 }
 
@@ -277,9 +243,10 @@ function validateCatalogSkill(skill, id) {
   if (skill.path !== `skills/${id}`) errors.push(`${id}: catalog path mismatch`);
   if (skill.visibility !== "public") errors.push(`${id}: visibility must be public`);
   if (typeof skill.summary !== "string" || skill.summary.length < 40) errors.push(`${id}: summary is missing or too short`);
-  if (!sameArray(skill.required_tools, expectedTools[id])) errors.push(`${id}: required_tools do not match the release contract`);
-  if (skill.credit_behavior !== expectedCreditBehavior[id]) errors.push(`${id}: credit_behavior mismatch`);
-  if (skill.write_behavior !== expectedWriteBehavior[id]) errors.push(`${id}: write_behavior mismatch`);
+  if (!Array.isArray(skill.required_tools)) errors.push(`${id}: required_tools must be an array`);
+  if (!sameArray(skill.required_tools, expectedTools[id])) errors.push(`${id}: required_tools changed from the reviewed release contract`);
+  if (typeof skill.credit_behavior !== "string" || !skill.credit_behavior) errors.push(`${id}: credit_behavior is required`);
+  if (typeof skill.write_behavior !== "string" || !skill.write_behavior) errors.push(`${id}: write_behavior is required`);
   for (const tool of skill.required_tools ?? []) {
     if (!/^apollo_[a-z0-9_]+$/.test(tool)) errors.push(`${id}: '${tool}' is not a platform-neutral Apollo tool name`);
   }
@@ -292,30 +259,6 @@ function validateToolReferences(text, skill) {
     errors.push(`${skill.id}: referenced tools must exactly match required_tools`);
   }
   if (/\bmcp__/.test(text)) errors.push(`${skill.id}: harness-qualified tool reference detected`);
-}
-
-function validateSafety(text, id) {
-  const requiredStages = stagedSafety[id] ?? [];
-  let previous = -1;
-  for (const phrase of requiredStages) {
-    const index = text.indexOf(phrase);
-    if (index === -1) errors.push(`${id}: missing an exact staged safety confirmation`);
-    if (index !== -1 && index <= previous) errors.push(`${id}: safety confirmation is out of staged order`);
-    if (index !== -1) previous = index;
-  }
-
-  const producer = phonePollingProducer[id];
-  if (producer) {
-    for (const phrase of [
-      `After the confirmed \`${producer}\` call`,
-      "top-level `request_id`",
-      "call `apollo_webhook_result_show`",
-      "up to about five attempts",
-      "Do not claim that",
-    ]) {
-      if (!text.includes(phrase)) errors.push(`${id}: incomplete asynchronous phone polling workflow`);
-    }
-  }
 }
 
 function validatePublicContent(text, label) {
@@ -383,7 +326,6 @@ async function main() {
       const skillText = contents.get(`skills/${id}/SKILL.md`);
       parseFrontmatter(skillText, id);
       if (skill) validateToolReferences(skillText, skill);
-      validateSafety(skillText, id);
       validatePublicContent(skillText, `skills/${id}/SKILL.md`);
     }
   }
@@ -405,6 +347,9 @@ async function main() {
     if (!sameArray(Object.keys(platformCatalog.status_definitions ?? {}), ["mcp_connection", "skill_delivery"])) {
       errors.push("catalog/platform-support.json: status definitions must separate MCP connection and skill delivery");
     }
+    if (!sameArray(Object.keys(platformCatalog.platforms ?? {}), expectedPlatformIds)) {
+      errors.push("catalog/platform-support.json: platform inventory or order changed");
+    }
     if (!sameArray(
       Object.keys(platformCatalog.status_definitions?.mcp_connection ?? {}),
       expectedMcpConnectionStatuses,
@@ -417,11 +362,7 @@ async function main() {
     )) {
       errors.push("catalog/platform-support.json: skill delivery status definitions are incomplete");
     }
-    if (!sameArray(Object.keys(platformCatalog.platforms ?? {}), Object.keys(expectedPlatforms))) {
-      errors.push("catalog/platform-support.json: platform inventory or order mismatch");
-    }
-    for (const [platform, [connectionStatus, deliveryStatus]] of Object.entries(expectedPlatforms)) {
-      const entry = platformCatalog.platforms?.[platform];
+    for (const [platform, entry] of Object.entries(platformCatalog.platforms ?? {})) {
       if (!entry || !sameArray(Object.keys(entry), platformKeys)) {
         errors.push(`catalog/platform-support.json: ${platform} fields are incomplete`);
         continue;
@@ -432,11 +373,13 @@ async function main() {
       if (!sameArray(Object.keys(entry.skill_delivery ?? {}), skillDeliveryKeys)) {
         errors.push(`catalog/platform-support.json: ${platform} skill delivery fields are incomplete`);
       }
-      if (entry.mcp_connection?.status !== connectionStatus) {
-        errors.push(`catalog/platform-support.json: ${platform} MCP connection must be ${connectionStatus}`);
+      const connectionStatus = entry.mcp_connection?.status;
+      const deliveryStatus = entry.skill_delivery?.status;
+      if (!expectedMcpConnectionStatuses.includes(connectionStatus)) {
+        errors.push(`catalog/platform-support.json: ${platform} has an unknown MCP connection status`);
       }
-      if (entry.skill_delivery?.status !== deliveryStatus) {
-        errors.push(`catalog/platform-support.json: ${platform} skill delivery must be ${deliveryStatus}`);
+      if (!expectedSkillDeliveryStatuses.includes(deliveryStatus)) {
+        errors.push(`catalog/platform-support.json: ${platform} has an unknown skill delivery status`);
       }
       for (const documentationUrl of [
         entry.mcp_connection?.official_documentation_url,

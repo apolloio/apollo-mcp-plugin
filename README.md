@@ -16,17 +16,17 @@ The skills disclose only the next decision the user needs to make. Read-only dis
 
 ## Packaging Scope
 
-The skill directories are the canonical public workflow source. The checked-in `.claude-plugin/`, `.cursor-plugin/`, and `.mcp.json` manifests remain the unchanged `0.1.1` Claude and Cursor packaging from the base release. The `0.2.0` skills catalog does not update those manifests or claim that every listed platform can currently load this repository.
+The skill directories are the canonical public workflow source. The existing Claude and Cursor plugin manifests advance to `0.2.0` so clients that use manifest versions can detect this skill release. This does not claim that every listed platform can load this repository.
 
 Platform status is tracked in `catalog/platform-support.json`:
 
 | Platform | Apollo MCP connection | Public skill delivery from this release |
 |---|---|---|
-| ChatGPT | First-party connector | Guidance only; connector installation does not prove skill discovery |
+| ChatGPT | First-party connector | Planned; ChatGPT supports skill upload, but this release has no verified adapter |
 | Claude connector | First-party connector | Guidance only; connector installation does not prove skill discovery |
 | Claude Code | Documented standalone connection | Experimental Claude plugin packaging |
 | Claude Cowork | First-party coding plugin | Experimental Claude marketplace packaging |
-| Cursor | Documented standalone connection | Experimental Cursor plugin packaging |
+| Cursor | First-party connector | Experimental Cursor plugin packaging |
 | Codex | First-party coding plugin | Planned; no verified adapter in this release |
 | Replit | First-party connector | Planned; no verified adapter in this release |
 | Perplexity connector | First-party connector | Guidance only; skill delivery is separate |
@@ -43,14 +43,14 @@ MCP connection availability and skill delivery are independent. A store, connect
 
 - Search and preview before requesting credit-consuming detail.
 - Ask separately before revealing private contact data.
-- Ask separately before creating Apollo contacts with deduplication.
+- Ask separately before creating Apollo contacts; do not promise bulk deduplication unless the active tool contract does.
 - Treat sequence enrollment as a distinct live-outreach write.
 - Treat sequence activation and direct sending as later, separate decisions.
 - Stop when a required capability is unavailable; do not invent results or client commands.
 
 ## Runtime Release Gate
 
-The `prospect` skill depends on the free `apollo_organizations_organization_lookup` MCP contract. Publish `v0.2.0` only after the Leadgenie implementation is reviewed, its required checks pass, and the production MCP surface exposes that tool. If the lookup is unavailable, the skill must report the limitation; it must not fall back to the credit-charging `apollo_mixed_companies_search` tool.
+Publish `v0.2.0` only after every tool listed in `catalog/skills.json` and every parameter used by a `SKILL.md` workflow is exposed by the production MCP surface, and after the Leadgenie implementation passes its required checks. In particular, `prospect` depends on the free `apollo_organizations_organization_lookup` contract. Phone reveal remains optional and must run only when the active tool descriptions expose a complete reveal-and-poll contract. If a capability is unavailable, the skill must report the limitation; it must not invent a replacement or fall back to the credit-charging `apollo_mixed_companies_search` tool.
 
 ## Validation
 
@@ -60,7 +60,7 @@ Run the dependency-free repository check with:
 node scripts/validate-skills.mjs
 ```
 
-It validates the exact public inventory, catalog structure, frontmatter, encoding, leakage rules, declared tool references, platform statuses, and staged safety language.
+It validates public inventory, catalog structure, frontmatter, encoding, leakage rules, declared tool references, platform status shape, and plugin release versions.
 
 ## License
 
