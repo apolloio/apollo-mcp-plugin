@@ -1,0 +1,39 @@
+name: Publish to MCP Registry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server.json
+  workflow_dispatch:
+
+concurrency:
+  group: mcp-publishing
+  cancel-in-progress: true
+
+jobs:
+  publish-mcp:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Build mcp-publisher
+        run: |
+          git clone --depth 1 https://github.com/modelcontextprotocol/registry mcp-registry
+          cd mcp-registry && make publisher
+          cp cmd/publisher/bin/mcp-publisher ../mcp-publisher
+          cd .. && rm -rf mcp-registry
+          chmod +x mcp-publisher
+
+      - name: Authenticate with MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish
