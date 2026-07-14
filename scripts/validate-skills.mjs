@@ -28,7 +28,7 @@ const expectedTools = {
   ],
   prospect: [
     "apollo_mixed_people_api_search",
-    "apollo_mixed_companies_search",
+    "apollo_organizations_organization_lookup",
     "apollo_users_api_profile",
     "apollo_people_bulk_match",
     "apollo_webhook_result_show",
@@ -97,7 +97,6 @@ const stagedSafety = {
     "This will create or update [N] Apollo contact records with deduplication enabled. Do you want me to make that contact write now?",
   ],
   prospect: [
-    "This will consume 1 credit. Do you want to proceed?",
     "This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?",
     "This will reveal private contact data for [N] selected people. Do you want me to reveal it now?",
     "This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?",

@@ -36,6 +36,10 @@ Platform status is tracked in `catalog/platform-support.json`:
 - Treat sequence activation and direct sending as later, separate decisions.
 - Stop when a required capability is unavailable; do not invent results or client commands.
 
+## Runtime Release Gate
+
+The `prospect` skill depends on the free `apollo_organizations_organization_lookup` MCP contract. Publish `v0.2.0` only after the Leadgenie implementation is reviewed, its required checks pass, and the production MCP surface exposes that tool. If the lookup is unavailable, the skill must report the limitation; it must not fall back to the credit-charging `apollo_mixed_companies_search` tool.
+
 ## Validation
 
 Run the dependency-free repository check with:

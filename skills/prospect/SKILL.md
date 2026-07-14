@@ -15,15 +15,11 @@ If a role plus at least one account signal is present, make one concise, correct
 
 ## 2. Search and Rank
 
-Use `apollo_mixed_people_api_search` for people. Use `apollo_mixed_companies_search` only when company discovery is necessary and the visible tool description supports the requested filters.
+Use `apollo_mixed_people_api_search` for people. Use `apollo_organizations_organization_lookup` only to resolve a fuzzy company name or domain into lightweight organization candidates and an Apollo organization ID. Organization lookup is free discovery and does not require credit confirmation.
 
-People search is read-only. Before every `apollo_mixed_companies_search` call, explain its one-credit-per-nonempty-request cost and ask exactly:
+Do not treat organization lookup as filtered company prospecting: it does not replace industry, employee-count, funding, technology, or website-visitor company search. If the requested company filters are not supported by the visible people-search or lookup schemas, state that limitation instead of silently broadening the request or choosing a paid tool.
 
-```text
-This will consume 1 credit. Do you want to proceed?
-```
-
-Do not run organization search until the user agrees to that separate credit step. Show name or masked name, title, company, location, fit level, and fit reason. Do not include private emails, phones, or unnecessary internal identifiers.
+People search and organization lookup are read-only. When organization lookup returns multiple candidates, show the candidate name, domain, and website, then ask the user to choose before using an organization ID in a later action. Show people-search results with name or masked name, title, company, location, fit level, and fit reason. Do not include private emails, phones, or unnecessary internal identifiers.
 
 Rank as Strong, Good, or Partial based on title, seniority, account fit, geography, and other requested signals. State filters, assumptions, result count, and that the shortlist is search-only.
 
