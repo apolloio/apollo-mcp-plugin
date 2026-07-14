@@ -20,12 +20,24 @@ The skill directories are the canonical public workflow source. The checked-in `
 
 Platform status is tracked in `catalog/platform-support.json`:
 
-| Platform | Status |
-|---|---|
-| Claude Code, Cowork, Cursor | Experimental |
-| Codex, GitHub Copilot, Replit, Rovo Dev CLI, Perplexity Computer | Planned |
+| Platform | Apollo MCP connection | Public skill delivery from this release |
+|---|---|---|
+| ChatGPT | First-party connector | Guidance only; connector installation does not prove skill discovery |
+| Claude connector | First-party connector | Guidance only; connector installation does not prove skill discovery |
+| Claude Code | Documented standalone connection | Experimental Claude plugin packaging |
+| Claude Cowork | First-party coding plugin | Experimental Claude marketplace packaging |
+| Cursor | Documented standalone connection | Experimental Cursor plugin packaging |
+| Codex | First-party coding plugin | Planned; no verified adapter in this release |
+| Replit | First-party connector | Planned; no verified adapter in this release |
+| Perplexity connector | First-party connector | Guidance only; skill delivery is separate |
+| Perplexity Computer Skills | Separate skill surface | Planned; no verified upload bundle in this release |
+| VS Code with GitHub Copilot | Documented standalone connection | Planned; no verified adapter in this release |
+| Claude Desktop | Documented standalone connection | Guidance only; no verified adapter in this release |
+| Antigravity | Documented standalone connection | Planned; no verified adapter in this release |
+| Other MCP-compatible clients | Generic remote MCP fallback | Guidance only; no portable destination can be assumed |
+| Rovo Dev CLI | Research only; not an Apollo support claim | Research only; not an Apollo support claim |
 
-`experimental` means packaging exists but the complete clean-client lifecycle smoke test is still pending. `planned` is a roadmap signal, not a runtime or installation claim. The support catalog records discovery, destination, authentication, verification, update/removal, and rollback expectations for each platform. Actual tool availability, permissions, plan limits, and credit behavior come from the Apollo MCP server and the connected client.
+MCP connection availability and skill delivery are independent. A store, connector, plugin, or standalone MCP installation must not be treated as proof that these five skills are installed or discoverable. `experimental` means packaging exists but the complete clean-client lifecycle smoke test is still pending. `planned` and `guidance only` do not claim runtime installation support. The catalog records authentication and connection evidence separately from skill discovery, destination, verification, update/removal, and rollback expectations. Actual tool availability, permissions, plan limits, and credit behavior come from the Apollo MCP server and the connected client.
 
 ## Safety Model
 

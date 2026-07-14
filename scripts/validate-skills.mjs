@@ -61,22 +61,42 @@ const expectedWriteBehavior = {
   "sequence-load": "separate-confirmations-for-contact-write-enrollment-activation-and-send",
 };
 const expectedPlatforms = {
-  claude_code: "experimental",
-  claude_cowork: "experimental",
-  cursor: "experimental",
-  codex: "planned",
-  copilot: "planned",
-  replit: "planned",
-  rovo_dev: "planned",
-  perplexity_computer: "planned",
+  chatgpt: ["first_party_connector", "guidance_only"],
+  claude_connector: ["first_party_connector", "guidance_only"],
+  claude_code: ["standalone_documented", "experimental"],
+  claude_cowork: ["first_party_plugin", "experimental"],
+  cursor: ["standalone_documented", "experimental"],
+  codex: ["first_party_plugin", "planned"],
+  replit: ["first_party_connector", "planned"],
+  perplexity_connector: ["first_party_connector", "guidance_only"],
+  perplexity_computer: ["separate_skill_surface", "planned"],
+  copilot: ["standalone_documented", "planned"],
+  claude_desktop: ["standalone_documented", "guidance_only"],
+  antigravity: ["standalone_documented", "planned"],
+  generic: ["generic_compatible", "guidance_only"],
+  rovo_dev: ["research_only", "research_only"],
 };
-const platformKeys = [
-  "label",
+const expectedMcpConnectionStatuses = [
+  "first_party_connector",
+  "first_party_plugin",
+  "standalone_documented",
+  "generic_compatible",
+  "separate_skill_surface",
+  "research_only",
+];
+const expectedSkillDeliveryStatuses = ["experimental", "planned", "guidance_only", "research_only"];
+const platformKeys = ["label", "mcp_connection", "skill_delivery"];
+const mcpConnectionKeys = [
+  "status",
+  "availability",
+  "authentication",
+  "official_documentation_url",
+];
+const skillDeliveryKeys = [
   "status",
   "discovery",
   "installation",
   "destination_scope",
-  "mcp_authentication",
   "verification",
   "update_removal",
   "rollback",
@@ -382,22 +402,52 @@ async function main() {
     if (platformCatalog.catalog_version !== version) {
       errors.push(`catalog/platform-support.json: catalog_version must be ${version}`);
     }
+    if (!sameArray(Object.keys(platformCatalog.status_definitions ?? {}), ["mcp_connection", "skill_delivery"])) {
+      errors.push("catalog/platform-support.json: status definitions must separate MCP connection and skill delivery");
+    }
+    if (!sameArray(
+      Object.keys(platformCatalog.status_definitions?.mcp_connection ?? {}),
+      expectedMcpConnectionStatuses,
+    )) {
+      errors.push("catalog/platform-support.json: MCP connection status definitions are incomplete");
+    }
+    if (!sameArray(
+      Object.keys(platformCatalog.status_definitions?.skill_delivery ?? {}),
+      expectedSkillDeliveryStatuses,
+    )) {
+      errors.push("catalog/platform-support.json: skill delivery status definitions are incomplete");
+    }
     if (!sameArray(Object.keys(platformCatalog.platforms ?? {}), Object.keys(expectedPlatforms))) {
       errors.push("catalog/platform-support.json: platform inventory or order mismatch");
     }
-    for (const [platform, status] of Object.entries(expectedPlatforms)) {
+    for (const [platform, [connectionStatus, deliveryStatus]] of Object.entries(expectedPlatforms)) {
       const entry = platformCatalog.platforms?.[platform];
       if (!entry || !sameArray(Object.keys(entry), platformKeys)) {
         errors.push(`catalog/platform-support.json: ${platform} fields are incomplete`);
         continue;
       }
-      if (entry.status !== status) {
-        errors.push(`catalog/platform-support.json: ${platform} must be ${status}`);
+      if (!sameArray(Object.keys(entry.mcp_connection ?? {}), mcpConnectionKeys)) {
+        errors.push(`catalog/platform-support.json: ${platform} MCP connection fields are incomplete`);
       }
-      if (!entry.official_documentation_url.startsWith("https://")) {
-        errors.push(`catalog/platform-support.json: ${platform} must use an HTTPS documentation URL`);
+      if (!sameArray(Object.keys(entry.skill_delivery ?? {}), skillDeliveryKeys)) {
+        errors.push(`catalog/platform-support.json: ${platform} skill delivery fields are incomplete`);
       }
-      if (status === "planned" && entry.installation !== "Not available from this release.") {
+      if (entry.mcp_connection?.status !== connectionStatus) {
+        errors.push(`catalog/platform-support.json: ${platform} MCP connection must be ${connectionStatus}`);
+      }
+      if (entry.skill_delivery?.status !== deliveryStatus) {
+        errors.push(`catalog/platform-support.json: ${platform} skill delivery must be ${deliveryStatus}`);
+      }
+      for (const documentationUrl of [
+        entry.mcp_connection?.official_documentation_url,
+        entry.skill_delivery?.official_documentation_url,
+      ]) {
+        if (typeof documentationUrl !== "string" || !documentationUrl.startsWith("https://")) {
+          errors.push(`catalog/platform-support.json: ${platform} must use HTTPS documentation URLs`);
+        }
+      }
+      if (["planned", "guidance_only", "research_only"].includes(deliveryStatus)
+        && entry.skill_delivery?.installation !== "Not available from this release.") {
         errors.push(`catalog/platform-support.json: ${platform} must not provide actionable installation`);
       }
     }
