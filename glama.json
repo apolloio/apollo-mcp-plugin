@@ -1,0 +1,5 @@
+{
+  "name": "Apollo",
+  "description": "Official Apollo.io MCP server — lead enrichment, prospecting, outreach sequences, and analytics. Access 275M+ contacts and 73M+ companies.",
+  "transport": "http+sse"
+}
