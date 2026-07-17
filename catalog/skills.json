@@ -45,7 +45,8 @@
       "summary": "Build a ranked search-first prospect list and gate enrichment, private data, and saves.",
       "required_tools": [
         "apollo_mixed_people_api_search",
-        "apollo_organizations_organization_lookup",
+        "apollo_organizations_lookup",
+        "apollo_mixed_companies_search",
         "apollo_users_api_profile",
         "apollo_people_bulk_match",
         "apollo_contacts_bulk_create"

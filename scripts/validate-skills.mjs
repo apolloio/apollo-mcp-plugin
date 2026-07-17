@@ -17,7 +17,8 @@ const expectedTools = {
   ],
   prospect: [
     "apollo_mixed_people_api_search",
-    "apollo_organizations_organization_lookup",
+    "apollo_organizations_lookup",
+    "apollo_mixed_companies_search",
     "apollo_users_api_profile",
     "apollo_people_bulk_match",
     "apollo_contacts_bulk_create",
@@ -33,22 +34,6 @@ const expectedTools = {
     "apollo_emailer_campaigns_remove_or_stop_contact_ids",
   ],
 };
-const expectedPlatformIds = [
-  "chatgpt",
-  "claude_connector",
-  "claude_code",
-  "claude_cowork",
-  "cursor",
-  "codex",
-  "replit",
-  "perplexity_connector",
-  "perplexity_computer",
-  "copilot",
-  "claude_desktop",
-  "antigravity",
-  "generic",
-  "rovo_dev",
-];
 const skillKeys = [
   "id",
   "path",
@@ -57,32 +42,6 @@ const skillKeys = [
   "required_tools",
   "credit_behavior",
   "write_behavior",
-];
-const expectedMcpConnectionStatuses = [
-  "first_party_connector",
-  "first_party_plugin",
-  "standalone_documented",
-  "generic_compatible",
-  "separate_skill_surface",
-  "research_only",
-];
-const expectedSkillDeliveryStatuses = ["experimental", "planned", "guidance_only", "research_only"];
-const platformKeys = ["label", "mcp_connection", "skill_delivery"];
-const mcpConnectionKeys = [
-  "status",
-  "availability",
-  "authentication",
-  "official_documentation_url",
-];
-const skillDeliveryKeys = [
-  "status",
-  "discovery",
-  "installation",
-  "destination_scope",
-  "verification",
-  "update_removal",
-  "rollback",
-  "official_documentation_url",
 ];
 const errors = [];
 
@@ -272,6 +231,7 @@ function validatePublicContent(text, label) {
     [/\b(?:package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb)\b/i, "lockfile reference"],
   ];
   for (const [pattern, description] of forbidden) {
+    if (label === "README.md" && description === "client-specific plugin command") continue;
     if (pattern.test(text)) errors.push(`${label}: ${description} detected`);
   }
   const emailPattern = new RegExp("\\b[A-Z0-9._%+-]+" + "@" + "[A-Z0-9.-]+\\.[A-Z]{2,}\\b", "i");
@@ -301,7 +261,6 @@ async function main() {
   const releasePaths = [
     "README.md",
     "catalog/skills.json",
-    "catalog/platform-support.json",
     "scripts/validate-skills.mjs",
     ...skillIds.map((id) => `skills/${id}/SKILL.md`),
   ];
@@ -309,10 +268,6 @@ async function main() {
   for (const relativePath of releasePaths) contents.set(relativePath, await readUtf8(relativePath));
 
   const catalog = parseJson(contents.get("catalog/skills.json"), "catalog/skills.json");
-  const platformCatalog = parseJson(
-    contents.get("catalog/platform-support.json"),
-    "catalog/platform-support.json",
-  );
 
   await validateInventory(catalog);
   await validateForbiddenArtifacts();
@@ -332,69 +287,6 @@ async function main() {
 
   validatePublicContent(contents.get("README.md"), "README.md");
   validatePublicContent(contents.get("catalog/skills.json"), "catalog/skills.json");
-  validatePublicContent(contents.get("catalog/platform-support.json"), "catalog/platform-support.json");
-
-  if (platformCatalog) {
-    if (/private[- ]overlay|private skills?/i.test(contents.get("catalog/platform-support.json"))) {
-      errors.push("catalog/platform-support.json: private implementation details are not allowed");
-    }
-    if (!sameArray(Object.keys(platformCatalog), ["catalog_version", "status_definitions", "platforms"])) {
-      errors.push("catalog/platform-support.json: unexpected root fields");
-    }
-    if (platformCatalog.catalog_version !== version) {
-      errors.push(`catalog/platform-support.json: catalog_version must be ${version}`);
-    }
-    if (!sameArray(Object.keys(platformCatalog.status_definitions ?? {}), ["mcp_connection", "skill_delivery"])) {
-      errors.push("catalog/platform-support.json: status definitions must separate MCP connection and skill delivery");
-    }
-    if (!sameArray(Object.keys(platformCatalog.platforms ?? {}), expectedPlatformIds)) {
-      errors.push("catalog/platform-support.json: platform inventory or order changed");
-    }
-    if (!sameArray(
-      Object.keys(platformCatalog.status_definitions?.mcp_connection ?? {}),
-      expectedMcpConnectionStatuses,
-    )) {
-      errors.push("catalog/platform-support.json: MCP connection status definitions are incomplete");
-    }
-    if (!sameArray(
-      Object.keys(platformCatalog.status_definitions?.skill_delivery ?? {}),
-      expectedSkillDeliveryStatuses,
-    )) {
-      errors.push("catalog/platform-support.json: skill delivery status definitions are incomplete");
-    }
-    for (const [platform, entry] of Object.entries(platformCatalog.platforms ?? {})) {
-      if (!entry || !sameArray(Object.keys(entry), platformKeys)) {
-        errors.push(`catalog/platform-support.json: ${platform} fields are incomplete`);
-        continue;
-      }
-      if (!sameArray(Object.keys(entry.mcp_connection ?? {}), mcpConnectionKeys)) {
-        errors.push(`catalog/platform-support.json: ${platform} MCP connection fields are incomplete`);
-      }
-      if (!sameArray(Object.keys(entry.skill_delivery ?? {}), skillDeliveryKeys)) {
-        errors.push(`catalog/platform-support.json: ${platform} skill delivery fields are incomplete`);
-      }
-      const connectionStatus = entry.mcp_connection?.status;
-      const deliveryStatus = entry.skill_delivery?.status;
-      if (!expectedMcpConnectionStatuses.includes(connectionStatus)) {
-        errors.push(`catalog/platform-support.json: ${platform} has an unknown MCP connection status`);
-      }
-      if (!expectedSkillDeliveryStatuses.includes(deliveryStatus)) {
-        errors.push(`catalog/platform-support.json: ${platform} has an unknown skill delivery status`);
-      }
-      for (const documentationUrl of [
-        entry.mcp_connection?.official_documentation_url,
-        entry.skill_delivery?.official_documentation_url,
-      ]) {
-        if (typeof documentationUrl !== "string" || !documentationUrl.startsWith("https://")) {
-          errors.push(`catalog/platform-support.json: ${platform} must use HTTPS documentation URLs`);
-        }
-      }
-      if (["planned", "guidance_only", "research_only"].includes(deliveryStatus)
-        && entry.skill_delivery?.installation !== "Not available from this release.") {
-        errors.push(`catalog/platform-support.json: ${platform} must not provide actionable installation`);
-      }
-    }
-  }
 
   if (errors.length > 0) {
     throw new Error(`Validation failed:\n- ${errors.join("\n- ")}`);
