@@ -375,7 +375,7 @@ TODO: Confirm and link the exact Apollo.io privacy policy, security, and trust-c
 
 ## Official MCP Registry
 
-This server is published and **active** in the official [Model Context Protocol Registry](https://modelcontextprotocol.io/).
+This server is published and **active** in the official [Model Context Protocol Registry](https://registry.modelcontextprotocol.io/).
 
 | Field | Value |
 |---|---|
