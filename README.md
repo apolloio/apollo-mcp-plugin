@@ -79,11 +79,7 @@ The following capabilities are confirmed by the server tools and skills in this 
 ## Prerequisites
 
 - **An Apollo.io account.** Sign in at <https://www.apollo.io/>.
-- **Apollo.io permissions and credits.** Actions run with your account's permissions, and some actions consume Apollo credits (for example, enrichment). See [Safety and Responsible Usage](#safety-and-responsible-usage).
-
-  ```text
-  TODO: Confirm the exact Apollo.io plan, workspace access, permission, and credit requirements with the Apollo MCP maintainers.
-  ```
+- **Apollo.io permissions and credits.** Actions run with your account's permissions, and some actions consume Apollo credits (for example, enrichment). See [Safety and Responsible Usage](#safety-and-responsible-usage). For plan, credit, and permission details, see the [Apollo documentation](https://docs.apollo.io).
 
 - **An MCP-compatible client** that supports the Streamable HTTP transport, such as:
   - GitHub Copilot in Visual Studio Code
@@ -166,7 +162,6 @@ You can connect the server in either of two ways.
 ### Option A — add the remote MCP server directly
 
 ```bash
-# TODO: Confirm the correct Claude Code CLI syntax for adding a Streamable HTTP MCP server.
 claude mcp add --transport http apollo https://mcp.apollo.io/mcp
 ```
 
@@ -213,9 +208,7 @@ Add the Apollo connector from your Claude settings, then authenticate:
 3. Approve the requested access.
 4. Confirm Apollo tools are available in a new chat.
 
-```text
-TODO: Confirm the exact Claude Desktop connector menu labels and navigation with the Apollo MCP maintainers.
-```
+> Exact menu labels and navigation vary by Claude Desktop version. See Anthropic's documentation for the current steps to add a remote MCP connector.
 
 ---
 
@@ -242,11 +235,7 @@ The Apollo MCP server uses **Apollo.io OAuth**. Only confirmed behavior is docum
 - **Sign-in flow.** When you connect the server, your client opens an Apollo.io sign-in and authorization window. After you approve access, your client can call Apollo tools on your behalf.
 - **Workspace and permissions.** The server acts with the authenticated user's Apollo.io permissions. You can only access data and perform actions your Apollo.io account is allowed to.
 - **Reconnecting.** In Claude Code you can re-run `/mcp`, select **apollo**, and re-authenticate. In other clients, re-trigger authentication from the client's MCP or connector settings.
-- **Revoking access.**
-
-  ```text
-  TODO: Confirm the exact steps and location for revoking the Apollo MCP OAuth authorization with the Apollo MCP maintainers.
-  ```
+- **Revoking access.** Remove or disconnect the `apollo` server from your MCP client to stop it from acting on your behalf. To manage authorizations at the account level, use your Apollo.io account settings.
 
 > OAuth authorization-server metadata is discoverable at `https://mcp.apollo.io/.well-known/oauth-authorization-server`. Beyond that, this README does not assert a specific OAuth specification or profile.
 
@@ -300,24 +289,22 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 
 ### Underlying Apollo tools referenced by the skills
 
-| Tool | Description | Data effect | Credits | Outreach / external action |
-|---|---|---|---|---|
-| `apollo_mixed_people_api_search` | Search Apollo's people database by title, seniority, location, and company filters. | Reads | No | No |
-| `apollo_mixed_companies_search` | Search Apollo's organization database by industry, size, location, and keywords. | Reads | No | No |
-| `apollo_people_match` | Match and enrich a single person from available identifiers. | Reads / enriches | Yes (typically 1 credit per person) | No |
-| `apollo_people_bulk_match` | Match and enrich multiple people in one call. | Reads / enriches | Yes (per person enriched) | No |
-| `apollo_organizations_enrich` | Enrich a single organization. | Reads / enriches | ⚠️ TODO: confirm credit cost | No |
-| `apollo_organizations_bulk_enrich` | Enrich multiple organizations in one call. | Reads / enriches | ⚠️ TODO: confirm credit cost | No |
-| `apollo_contacts_create` | Create a contact in the Apollo workspace. | Changes Apollo data | ⚠️ TODO: confirm | No |
-| `apollo_emailer_campaigns_search` | Find outreach sequences by name. | Reads | No | No |
-| `apollo_emailer_campaigns_add_contact_ids` | Add contacts to an outreach sequence. | Changes Apollo data | ⚠️ TODO: confirm | **Yes — may start outbound depending on sequence settings.** |
-| `apollo_emailer_campaigns_remove_or_stop_contact_ids` | Remove or stop contacts in an outreach sequence. | Changes Apollo data | No | Affects active outreach |
-| `apollo_email_accounts_index` | List connected email/sending accounts. | Reads | No | No |
-| `apollo_analytics_sync_report` | Retrieve sales analytics metrics and breakdowns. | Reads | No | No |
+| Tool | Description | Data effect | Outreach / external action |
+|---|---|---|---|
+| `apollo_mixed_people_api_search` | Search Apollo's people database by title, seniority, location, and company filters. | Reads | No |
+| `apollo_mixed_companies_search` | Search Apollo's organization database by industry, size, location, and keywords. | Reads | No |
+| `apollo_people_match` | Match and enrich a single person from available identifiers. | Reads / enriches | No |
+| `apollo_people_bulk_match` | Match and enrich multiple people in one call. | Reads / enriches | No |
+| `apollo_organizations_enrich` | Enrich a single organization. | Reads / enriches | No |
+| `apollo_organizations_bulk_enrich` | Enrich multiple organizations in one call. | Reads / enriches | No |
+| `apollo_contacts_create` | Create a contact in the Apollo workspace. | Changes Apollo data | No |
+| `apollo_emailer_campaigns_search` | Find outreach sequences by name. | Reads | No |
+| `apollo_emailer_campaigns_add_contact_ids` | Add contacts to an outreach sequence. | Changes Apollo data | **Yes — may start outbound depending on sequence settings.** |
+| `apollo_emailer_campaigns_remove_or_stop_contact_ids` | Remove or stop contacts in an outreach sequence. | Changes Apollo data | Affects active outreach |
+| `apollo_email_accounts_index` | List connected email/sending accounts. | Reads | No |
+| `apollo_analytics_sync_report` | Retrieve sales analytics metrics and breakdowns. | Reads | No |
 
-```text
-TODO: Confirm the complete, authoritative tool list, per-tool credit costs, and read/write classifications with the Apollo MCP maintainers, and link to a canonical tool reference if one is published.
-```
+> Some actions (such as enrichment) consume Apollo credits. For per-tool credit costs and the authoritative, up-to-date tool reference, see the [Apollo documentation](https://docs.apollo.io).
 
 ---
 
@@ -335,7 +322,7 @@ For clients where you can choose a model (for example, Claude Code via `/model`)
 - **Review prospecting results** before using or exporting them.
 - **Follow applicable privacy, marketing, anti-spam, and data-protection laws** in your jurisdiction and your recipients'.
 - **Confirm recipients** before adding anyone to an outreach sequence. Depending on your sequence and sending configuration, enrollment may start outbound automatically. Always verify the sequence name, sending account, and enrollment volume before confirming.
-- **Be aware of Apollo credit consumption.** Enrichment typically costs 1 credit per person; bulk enrichment scales with the number of people enriched. This repository's skills are designed to warn and request confirmation before credit-consuming actions.
+- **Be aware of Apollo credit consumption.** Some actions (such as enrichment) consume Apollo credits, and bulk actions scale with volume. This repository's skills are designed to warn and request confirmation before credit-consuming actions. For credit costs, see the [Apollo documentation](https://docs.apollo.io).
 - **Avoid bulk or destructive actions** without reviewing their exact scope first.
 - **Respect Apollo account permissions and your organization's policies.**
 
@@ -349,11 +336,12 @@ For clients where you can choose a model (for example, Claude Code via `/model`)
 - The server interacts with Apollo data under your authenticated account and permissions.
 - Avoid sending unnecessary sensitive information in prompts.
 
-For Apollo.io's official privacy and security resources, see <https://www.apollo.io/>.
+For Apollo.io's official privacy and security resources:
 
-```text
-TODO: Confirm and link the exact Apollo.io privacy policy, security, and trust-center URLs with the Apollo MCP maintainers.
-```
+- **Privacy Policy:** <https://www.apollo.io/privacy-policy>
+- **Privacy Center:** <https://www.apollo.io/company/privacy-center>
+- **Security:** <https://www.apollo.io/product/security>
+- **Trust Center:** <https://trust.apollo.io/>
 
 ---
 
@@ -408,8 +396,10 @@ Repository layout:
 
 `server.json` follows the MCP server schema referenced at the top of the file. Publication is automated by the CI workflow (see below), which downloads the official `mcp-publisher` and runs `mcp-publisher publish`.
 
-```text
-TODO: Confirm whether a local validation/lint command (for example, a `mcp-publisher validate` step) is part of the intended contributor workflow.
+There is no standalone `validate` command. To check `server.json` locally before pushing, run a dry-run publish with the official CLI:
+
+```bash
+mcp-publisher publish --dry-run
 ```
 
 Contributions are welcome via pull requests. Please keep version metadata consistent across `server.json`, `.claude-plugin/plugin.json`, and `.cursor-plugin/plugin.json`.
@@ -421,26 +411,15 @@ Contributions are welcome via pull requests. Please keep version metadata consis
 - The server version is declared in **`server.json`** (`version: 0.1.1`) and mirrored in the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`).
 - On every push to `main` that changes `server.json`, the [`publish-mcp.yml`](.github/workflows/publish-mcp.yml) workflow publishes the new version to the **official Model Context Protocol Registry** (authenticating via GitHub OIDC).
 - Keep the version in `server.json` and the plugin manifests aligned before publishing, so the repository and the registry stay in sync.
-
-```text
-TODO: Confirm whether GitHub Releases/tags are also cut per version, and document that process if so.
-```
+- Releases are driven by `server.json` changes on `main` — the repository does not cut GitHub Releases or version tags per version.
 
 ---
 
 ## Security
 
-There is currently no `SECURITY.md` in this repository.
-
-```text
-TODO: Add a SECURITY.md file describing the responsible vulnerability disclosure process.
-```
-
 Please do **not** report security vulnerabilities through public GitHub issues.
 
-```text
-TODO: Confirm the private security contact (for example, a security@ address or a disclosure form) with the Apollo MCP maintainers.
-```
+Report suspected vulnerabilities privately through the **[Apollo Trust Center](https://trust.apollo.io/)**. See [`SECURITY.md`](SECURITY.md) for the full disclosure process and scope.
 
 ---
 
@@ -448,14 +427,11 @@ TODO: Confirm the private security contact (for example, a security@ address or 
 
 | Need | Where to go |
 |---|---|
-| Apollo product support (data, credits, account, billing) | [Apollo.io](https://www.apollo.io/) support channels |
+| Apollo product support (data, credits, account, billing) | [Apollo Knowledge Base](https://knowledge.apollo.io/hc/en-us) or [contact Apollo Support](https://www.apollo.io/contact-us) |
+| Apollo product documentation | [docs.apollo.io](https://docs.apollo.io) |
 | MCP integration bugs (this repository) | Open a GitHub issue on [apolloio/apollo-mcp-plugin](https://github.com/apolloio/apollo-mcp-plugin/issues) |
 | Feature requests | Open a GitHub issue on [apolloio/apollo-mcp-plugin](https://github.com/apolloio/apollo-mcp-plugin/issues) |
 | Security vulnerabilities | Do not open a public issue — see [Security](#security) |
-
-```text
-TODO: Confirm the exact Apollo product support URL and the preferred contact channel for MCP integration bugs and feature requests with the Apollo MCP maintainers.
-```
 
 ---
 
