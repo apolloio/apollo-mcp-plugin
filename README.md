@@ -381,11 +381,8 @@ This server is published and **active** in the official [Model Context Protocol 
 |---|---|
 | Registry name | `io.github.apolloio/apollo-mcp` |
 | Version | `0.1.1` |
-| Status | active |
-| Latest version | true |
 | Transport | Streamable HTTP |
 | Endpoint | `https://mcp.apollo.io/mcp` |
-| Published | July 20, 2026 |
 
 > Publication in the official Model Context Protocol Registry is separate from the **curated GitHub MCP Registry** and the VS Code MCP gallery. Being active in the official registry does not automatically make the server discoverable in those curated catalogs.
 
