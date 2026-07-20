@@ -19,11 +19,11 @@ Run these commands in Claude Code:
 /plugin install apollo@apollo-plugin-marketplace
 ```
 
-Restart Claude Code, run `/mcp`, select Apollo, and authenticate with OAuth in the browser.
+Run `/reload-plugins`, then run `/mcp`, select Apollo, and authenticate with OAuth in the browser.
 
 ### Cursor
 
-Open the Cursor Plugin Marketplace, search for Apollo, install the plugin, and authenticate with Apollo.io when prompted.
+Open Cursor's Customize or Plugin Marketplace, search for Apollo, or run `/add-plugin` in Agent chat and select Apollo. Install the plugin and authenticate with Apollo.io when prompted.
 
 An MCP connection does not by itself prove that these workflow skills are installed or discoverable. Use the installation and discovery controls provided by the current client, and verify the five skills by name before relying on them.
 
