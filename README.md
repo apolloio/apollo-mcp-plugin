@@ -54,7 +54,7 @@ For complex, long-running prospecting and orchestration, use the most capable Cl
 
 ## Runtime Release Gate
 
-Publish `v0.2.0` only after every tool and parameter used by a public skill matches the production Apollo MCP surface and the corresponding Leadgenie checks pass. In particular, `prospect` depends on the proposed free `apollo_organizations_lookup` contract in Leadgenie PR #97251. Until that contract is merged and deployed, the skill must report that free organization lookup is unavailable rather than substitute the paid company-search tool.
+Publish `v0.2.0` only after every tool and parameter used by a public skill matches the production Apollo MCP surface and the corresponding Leadgenie checks pass. The free `apollo_organizations_lookup` contract merged in Leadgenie PR #97251 and still requires deployment verification. Until the tool is available on the production Apollo MCP surface, the skill must report that free organization lookup is unavailable rather than substitute the paid company-search tool.
 
 Phone reveal remains optional and may run only when the active tool descriptions expose a complete reveal-and-poll contract. Never claim installation, discovery, enrichment, reveal, or a write without verification.
 

@@ -24,6 +24,7 @@ This will consume 1 credit. Do you want to proceed?
 ```
 
 If the paid tool is unavailable or the user declines, state that limitation instead of silently broadening the request.
+If `apollo_organizations_lookup` is unavailable, report that limitation; do not substitute paid company search unless the user separately requests filtered prospecting and approves its one-credit cost.
 
 People search and organization lookup are read-only. When organization lookup returns multiple candidates, show the candidate name, domain, and website, then ask the user to choose before using an organization ID in a later action. Show people-search results with name or masked name, title, company, location, fit level, and fit reason. Do not include private emails, phones, or unnecessary internal identifiers.
 

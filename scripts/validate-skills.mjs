@@ -109,7 +109,9 @@ function parseFrontmatter(text, id) {
     errors.push(`${id}: frontmatter must contain exactly name then description`);
   }
   if (fields.name !== id) errors.push(`${id}: frontmatter name must match the skill ID`);
-  if (typeof fields.description !== "string" || !/\bUse when\b/.test(fields.description)) {
+  if (typeof fields.description !== "string" || fields.description.length < 1 || fields.description.length > 1024) {
+    errors.push(`${id}: description must contain 1-1024 characters`);
+  } else if (!/\bUse when\b/.test(fields.description)) {
     errors.push(`${id}: description must be trigger-rich and include 'Use when'`);
   }
   return fields;
