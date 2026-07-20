@@ -166,6 +166,7 @@ You can connect the server in either of two ways.
 ### Option A — add the remote MCP server directly
 
 ```bash
+# TODO: Confirm the correct Claude Code CLI syntax for adding a Streamable HTTP MCP server.
 claude mcp add --transport http apollo https://mcp.apollo.io/mcp
 ```
 
