@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.apolloio/apollo-mcp",
   "title": "Apollo.io",
-  "description": "Prospect, enrich leads, and add to outreach sequences with Apollo.io. Search contacts and companies, enrich lead data, and manage sequences — all from your AI assistant.",
+  "description": "Prospect, enrich leads, and manage outreach sequences with Apollo.io.",
   "repository": {
     "url": "https://github.com/apolloio/apollo-mcp-plugin.git",
     "source": "github"
