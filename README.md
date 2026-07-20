@@ -1,163 +1,471 @@
-# Apollo Plugin for Claude Code and Cowork
+# Apollo.io MCP Server
 
-Prospect, enrich leads, and add to outreach sequences with [Apollo.io](https://www.apollo.io/) MCP Server
-- Fast to install.
-- Powerful in execution.
-- Designed for real GTM workflows.
+> The official Apollo.io Model Context Protocol server for prospecting, lead enrichment, sales intelligence, and outreach workflows.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.apolloio%2Fapollo--mcp-6E56CF.svg)](https://registry.modelcontextprotocol.io/)
+[![Version](https://img.shields.io/badge/version-0.1.1-informational.svg)](server.json)
+
+**Provider:** Official, first-party server built and maintained by [Apollo.io](https://www.apollo.io/).
+
+Bring Apollo.io prospecting, enrichment, and outreach directly into your favorite MCP-compatible AI application — GitHub Copilot, Visual Studio Code, Cursor, Claude Code, Claude Desktop, and Claude Cowork.
+
+- **Apollo.io:** <https://www.apollo.io/>
+- **Model Context Protocol:** <https://modelcontextprotocol.io/>
+- **License:** [MIT](LICENSE)
 
 ---
 
-## 🔌 One-Click MCP Server Integration
+## Table of Contents
 
-This plugin automatically configures the Apollo MCP Server when installed.
-No manual server setup or config files.
-Install the plugin, authenticate with Apollo, and run `/apollo:*` commands.
+- [Overview](#overview)
+- [Key Capabilities](#key-capabilities)
+- [Prerequisites](#prerequisites)
+- [Install in Visual Studio Code and GitHub Copilot](#install-in-visual-studio-code-and-github-copilot)
+- [Install in Cursor](#install-in-cursor)
+- [Install in Claude Code](#install-in-claude-code)
+- [Install in Claude Desktop or Claude Cowork](#install-in-claude-desktop-or-claude-cowork)
+- [Generic MCP Client Configuration](#generic-mcp-client-configuration)
+- [Authentication and Authorization](#authentication-and-authorization)
+- [Usage Examples](#usage-examples)
+- [Available Tools and Capabilities](#available-tools-and-capabilities)
+- [Model Recommendations](#model-recommendations)
+- [Safety and Responsible Usage](#safety-and-responsible-usage)
+- [Privacy and Data Handling](#privacy-and-data-handling)
+- [Troubleshooting](#troubleshooting)
+- [Official MCP Registry](#official-mcp-registry)
+- [Development and Contribution](#development-and-contribution)
+- [Versioning and Releases](#versioning-and-releases)
+- [Security](#security)
+- [Support](#support)
+- [Credits](#credits)
+- [License](#license)
 
 ---
 
-## ✅ Powerful Skills
+## Overview
 
-High-value skills that chain multiple Apollo APIs into complete workflows:
+The Apollo.io MCP server exposes Apollo.io's go-to-market data and workflows through the [Model Context Protocol](https://modelcontextprotocol.io/), so MCP-compatible AI applications can prospect for people and companies, enrich contacts, query sales analytics, and load leads into outreach sequences using natural language.
+
+- **Hosted and maintained by Apollo.io.** The server runs remotely — there is nothing to build, host, or run locally.
+- **Transport:** Streamable HTTP.
+- **Endpoint:**
+
+  ```text
+  https://mcp.apollo.io/mcp
+  ```
+
+- **Authentication:** Handled through Apollo.io OAuth. You sign in with your Apollo.io account and authorize access from your MCP client; the server then acts with your Apollo.io permissions. See [Authentication and Authorization](#authentication-and-authorization).
+
+This repository also ships an optional Apollo plugin for Claude Code and Cowork that bundles ready-made workflow skills (`/apollo:*` commands) on top of the same MCP server.
+
+---
+
+## Key Capabilities
+
+The following capabilities are confirmed by the server tools and skills in this repository:
+
+- **People prospecting** — search Apollo's people database by title, seniority, location, and company attributes.
+- **Company prospecting** — search organizations by industry, size, location, and keywords.
+- **Contact and account enrichment** — match and enrich people and organizations, individually or in bulk.
+- **Outreach sequence workflows** — find sequences, and add or remove/stop contacts in a sequence.
+- **Sales analytics** — query email, call, meeting, task, opportunity, sequence, and conversation-intelligence metrics and return formatted breakdowns.
+- **Contact management** — create Apollo contacts as part of enrichment and sequence-loading workflows.
+
+> The remote server may expose additional tools beyond those exercised by the bundled skills. The list above reflects what is confirmed in this repository. See [Available Tools and Capabilities](#available-tools-and-capabilities).
+
+---
+
+## Prerequisites
+
+- **An Apollo.io account.** Sign in at <https://www.apollo.io/>.
+- **Apollo.io permissions and credits.** Actions run with your account's permissions, and some actions consume Apollo credits (for example, enrichment). See [Safety and Responsible Usage](#safety-and-responsible-usage).
+
+  ```text
+  TODO: Confirm the exact Apollo.io plan, workspace access, permission, and credit requirements with the Apollo MCP maintainers.
+  ```
+
+- **An MCP-compatible client** that supports the Streamable HTTP transport, such as:
+  - GitHub Copilot in Visual Studio Code
+  - Cursor
+  - Claude Code
+  - Claude Desktop / Claude Cowork
+  - Other MCP clients (see [Generic MCP Client Configuration](#generic-mcp-client-configuration))
+- **No local runtime required.** The server is remote and hosted by Apollo.io — you do **not** need Node.js, Docker, or a local installation to use it. (The optional Claude Code / Cowork plugin installs workflow skills locally through your client's plugin system, but the MCP server itself remains remote.)
+
+---
+
+## Install in Visual Studio Code and GitHub Copilot
+
+The Apollo.io MCP server is published in the official Model Context Protocol Registry, but it is **not yet discoverable in the curated GitHub MCP Registry or the VS Code MCP gallery**. Until then, add it manually with the configuration below.
+
+### Option A — workspace configuration file
+
+Create a `.vscode/mcp.json` file in your workspace:
+
+```json
+{
+  "servers": {
+    "apollo": {
+      "type": "http",
+      "url": "https://mcp.apollo.io/mcp"
+    }
+  }
+}
+```
+
+### Option B — command palette
+
+1. Open the Command Palette (`Cmd/Ctrl + Shift + P`).
+2. Run **MCP: Add Server**.
+3. Choose the HTTP (Streamable HTTP) server type when prompted.
+4. Enter the URL `https://mcp.apollo.io/mcp` and name the server `apollo`.
+
+### Expected authentication and first run
+
+1. Add the MCP server using either option above.
+2. Start or enable the `apollo` server.
+3. Complete Apollo.io authentication in the browser window that opens.
+4. Approve the requested access for your Apollo.io workspace.
+5. Open Copilot Chat in **Agent** mode.
+6. Confirm that the Apollo tools are listed and available to the agent.
+
+> For the current terminology and behavior, see the VS Code documentation on MCP servers: <https://code.visualstudio.com/docs/copilot/chat/mcp-servers>.
+
+---
+
+## Install in Cursor
+
+Add the remote Streamable HTTP endpoint to your Cursor MCP configuration (for example, `~/.cursor/mcp.json`, or the project-level `.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "apollo": {
+      "type": "http",
+      "url": "https://mcp.apollo.io/mcp"
+    }
+  }
+}
+```
+
+Then:
+
+1. Open Cursor settings and confirm the `apollo` server is listed under MCP.
+2. Authenticate with your Apollo.io account when prompted.
+3. Approve the requested access, then use Apollo tools from the agent.
+
+> This repository also includes a Cursor plugin manifest (`.cursor-plugin/plugin.json`) that references the same remote endpoint (`.mcp.json`), so no local package needs to run.
+
+---
+
+## Install in Claude Code
+
+You can connect the server in either of two ways.
+
+### Option A — add the remote MCP server directly
+
+```bash
+# TODO: Confirm the correct Claude Code CLI syntax for adding a Streamable HTTP MCP server.
+claude mcp add --transport http apollo https://mcp.apollo.io/mcp
+```
+
+Then run `/mcp` inside Claude Code, select **apollo**, and authenticate.
+
+### Option B — install the Apollo plugin (adds `/apollo:*` workflow skills)
+
+1. Add this plugin's marketplace:
+
+   ```text
+   /plugin marketplace add apolloio/apollo-mcp-plugin
+   ```
+
+2. Install the plugin:
+
+   ```text
+   /plugin install apollo@apollo-plugin-marketplace
+   ```
+
+3. Restart Claude Code so the MCP server starts correctly.
+
+The plugin automatically configures the Apollo MCP server — no manual config files. After installing, authenticate with `/mcp` and run `/apollo:*` commands (see [Available Tools and Capabilities](#available-tools-and-capabilities)).
+
+---
+
+## Install in Claude Desktop or Claude Cowork
+
+Claude Desktop and Claude Cowork are separate from Claude Code (the CLI). Use the steps below for the desktop-based clients.
+
+### Cowork (one-click)
+
+Click to install in a single step:
+
+**[Install in Cowork](https://claude.ai/desktop/customize/plugins/new?marketplace=apolloio/apollo-mcp-plugin&plugin=apollo)**
+
+Then restart Cowork so the MCP server starts correctly.
+
+### Claude Desktop
+
+Add the Apollo connector from your Claude settings, then authenticate:
+
+1. Open **Settings** and connect the Apollo.io connector (Apollo appears as a remote MCP server).
+2. Complete Apollo.io authentication in your browser.
+3. Approve the requested access.
+4. Confirm Apollo tools are available in a new chat.
+
+```text
+TODO: Confirm the exact Claude Desktop connector menu labels and navigation with the Apollo MCP maintainers.
+```
+
+---
+
+## Generic MCP Client Configuration
+
+For any other MCP-compatible client that supports Streamable HTTP:
+
+```json
+{
+  "name": "apollo",
+  "type": "streamable-http",
+  "url": "https://mcp.apollo.io/mcp"
+}
+```
+
+> Exact property names vary between clients. Some clients use `type: "http"` (as in the VS Code and Cursor examples above) and some use `type: "streamable-http"`. Consult your client's MCP documentation for the precise schema.
+
+---
+
+## Authentication and Authorization
+
+The Apollo MCP server uses **Apollo.io OAuth**. Only confirmed behavior is documented here.
+
+- **Sign-in flow.** When you connect the server, your client opens an Apollo.io sign-in and authorization window. After you approve access, your client can call Apollo tools on your behalf.
+- **Workspace and permissions.** The server acts with the authenticated user's Apollo.io permissions. You can only access data and perform actions your Apollo.io account is allowed to.
+- **Reconnecting.** In Claude Code you can re-run `/mcp`, select **apollo**, and re-authenticate. In other clients, re-trigger authentication from the client's MCP or connector settings.
+- **Revoking access.**
+
+  ```text
+  TODO: Confirm the exact steps and location for revoking the Apollo MCP OAuth authorization with the Apollo MCP maintainers.
+  ```
+
+> OAuth authorization-server metadata is discoverable at `https://mcp.apollo.io/.well-known/oauth-authorization-server`. Beyond that, this README does not assert a specific OAuth specification or profile.
+
+---
+
+## Usage Examples
+
+Natural-language prompts you can try once the server is connected:
+
+```text
+Find software engineering leaders at B2B SaaS companies in Germany with 200–1,000 employees.
+```
+
+```text
+Enrich these business contacts and return their current title, company, and verified business email when available.
+```
+
+```text
+Show email and call performance by rep for this quarter, sorted by calls made.
+```
+
+```text
+Add the selected contacts to my Apollo sequence "Q1 Enterprise Outbound" — show a preview before enrolling.
+```
+
+If you installed the Claude Code / Cowork plugin, the same workflows are available as slash commands:
+
+- `/apollo:prospect VP of Engineering at Series B+ SaaS companies in the US, 200-1000 employees`
+- `/apollo:enrich-lead https://www.linkedin.com/in/example`
+- `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
+- `/apollo:analytics Show me team call connect rate this quarter by rep`
+
+> **Review before you act.** For consequential actions — enrichment (credit-consuming) and adding contacts to a sequence (potentially outbound) — review the exact targets and parameters before confirming the operation.
+
+---
+
+## Available Tools and Capabilities
+
+The remote server provides the underlying Apollo tools; the tools listed below are those **confirmed in this repository** through the bundled workflow skills. The full, authoritative tool set is provided by the remote server and may evolve independently of this document.
+
+### Workflow skills (Claude Code / Cowork plugin)
+
+High-value skills that chain multiple Apollo tools into complete workflows:
 
 | Skill | What it does |
 |---|---|
-| `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email and get a full contact card with company context and next actions |
-| `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers |
-| `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment |
-| `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data |
+| `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email and get a full contact card with company context and next actions. |
+| `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers. |
+| `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment. |
+| `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data. |
 
+### Underlying Apollo tools referenced by the skills
 
-### `/apollo:enrich-lead`
+| Tool | Description | Data effect | Credits | Outreach / external action |
+|---|---|---|---|---|
+| `apollo_mixed_people_api_search` | Search Apollo's people database by title, seniority, location, and company filters. | Reads | No | No |
+| `apollo_mixed_companies_search` | Search Apollo's organization database by industry, size, location, and keywords. | Reads | No | No |
+| `apollo_people_match` | Match and enrich a single person from available identifiers. | Reads / enriches | Yes (typically 1 credit per person) | No |
+| `apollo_people_bulk_match` | Match and enrich multiple people in one call. | Reads / enriches | Yes (per person enriched) | No |
+| `apollo_organizations_enrich` | Enrich a single organization. | Reads / enriches | ⚠️ TODO: confirm credit cost | No |
+| `apollo_organizations_bulk_enrich` | Enrich multiple organizations in one call. | Reads / enriches | ⚠️ TODO: confirm credit cost | No |
+| `apollo_contacts_create` | Create a contact in the Apollo workspace. | Changes Apollo data | ⚠️ TODO: confirm | No |
+| `apollo_emailer_campaigns_search` | Find outreach sequences by name. | Reads | No | No |
+| `apollo_emailer_campaigns_add_contact_ids` | Add contacts to an outreach sequence. | Changes Apollo data | ⚠️ TODO: confirm | **Yes — may start outbound depending on sequence settings.** |
+| `apollo_emailer_campaigns_remove_or_stop_contact_ids` | Remove or stop contacts in an outreach sequence. | Changes Apollo data | No | Affects active outreach |
+| `apollo_email_accounts_index` | List connected email/sending accounts. | Reads | No | No |
+| `apollo_analytics_sync_report` | Retrieve sales analytics metrics and breakdowns. | Reads | No | No |
 
-Best for: one-off enrichment and fast lead lookups. <br>
-Input: name, company, LinkedIn URL, or email <br>
-Output: enriched profile (role, location, company context) and suggested next steps
-
-### `/apollo:prospect`
-Best for: turning an ICP into a shortlist fast. <br>
-Input: ICP description (industry, size, geography, titles) <br>
-Output: ranked lead table with enriched decision-makers
-
-### `/apollo:sequence-load`
-Best for: taking action on a list. <br>
-Input: targeting criteria + target sequence <br>
-Output: preview of candidates, enrichment + dedupe, then bulk enrollment into the sequence
-
-### `/apollo:analytics`
-Best for: answering performance questions without opening a dashboard. <br>
-Input: any question about emails, calls, meetings, tasks, opportunities, sequences, or conversation intelligence <br>
-Output: formatted tables with real Apollo data, broken down by rep, team, time, sequence, stage, or any other dimension
-
-
-Important: sequence enrollment may trigger outbound depending on your sequence settings and sending configuration.
-
----
-
-## 🧠 Model Recommendations (Quality-First)
-
-Recommended: Opus (best quality)
-
-Use Opus when you want the strongest reasoning and the most reliable multi-step tool orchestration.
-
-- Best for: prospecting workflows, ambiguous matches, multi-step chaining, and anything high-stakes
-- Tradeoff: higher latency and higher model usage cost on the Anthropic side
-
-### Strong fallback: Sonnet (faster)
-
-Use Sonnet when you want speed for quick lookups, smaller jobs, or rapid iteration.
-
-- Best for: quick searches, lightweight enrichment, and tight loops
-- Tradeoff: may require more user guidance for complex multi-step workflows
-
-In Claude Code, you can switch models via `/model`.
-
-
----
-
-## 📦 Installation
-
-### Cowork
-
-Click the link below to install in one step:
-
-[Install in Cowork](https://claude.ai/desktop/customize/plugins/new?marketplace=apolloio/apollo-mcp-plugin&plugin=apollo)
-
-Then restart Cowork to ensure the MCP server starts correctly.
-
-### Claude Code
-
-#### 1. Add this plugin's marketplace
-
-In Claude Code, run:
-
-```
-/plugin marketplace add apolloio/apollo-mcp-plugin
+```text
+TODO: Confirm the complete, authoritative tool list, per-tool credit costs, and read/write classifications with the Apollo MCP maintainers, and link to a canonical tool reference if one is published.
 ```
 
-#### 2. Install the plugin
+---
 
+## Model Recommendations
+
+For clients where you can choose a model (for example, Claude Code via `/model`):
+
+- **Opus (best quality)** — strongest reasoning and the most reliable multi-step tool orchestration. Best for prospecting workflows, ambiguous matches, multi-step chaining, and high-stakes tasks. Tradeoff: higher latency and usage cost.
+- **Sonnet (faster)** — good for quick lookups, lightweight enrichment, and rapid iteration. Tradeoff: may need more guidance on complex multi-step workflows.
+
+---
+
+## Safety and Responsible Usage
+
+- **Review prospecting results** before using or exporting them.
+- **Follow applicable privacy, marketing, anti-spam, and data-protection laws** in your jurisdiction and your recipients'.
+- **Confirm recipients** before adding anyone to an outreach sequence. Depending on your sequence and sending configuration, enrollment may start outbound automatically. Always verify the sequence name, sending account, and enrollment volume before confirming.
+- **Be aware of Apollo credit consumption.** Enrichment typically costs 1 credit per person; bulk enrichment scales with the number of people enriched. This repository's skills are designed to warn and request confirmation before credit-consuming actions.
+- **Avoid bulk or destructive actions** without reviewing their exact scope first.
+- **Respect Apollo account permissions and your organization's policies.**
+
+> This section is guidance, not legal advice.
+
+---
+
+## Privacy and Data Handling
+
+- Requests are sent to the Apollo-hosted MCP endpoint (`https://mcp.apollo.io/mcp`).
+- The server interacts with Apollo data under your authenticated account and permissions.
+- Avoid sending unnecessary sensitive information in prompts.
+
+For Apollo.io's official privacy and security resources, see <https://www.apollo.io/>.
+
+```text
+TODO: Confirm and link the exact Apollo.io privacy policy, security, and trust-center URLs with the Apollo MCP maintainers.
 ```
-/plugin install apollo@apollo-plugin-marketplace
+
+---
+
+## Troubleshooting
+
+| Symptom | What to check |
+|---|---|
+| Authentication window does not open | Ensure pop-ups are allowed; re-trigger authentication from your client's MCP/connector settings. |
+| Authentication session expired | Re-authenticate (in Claude Code, run `/mcp` → **apollo** → authenticate). |
+| Server is not starting | Restart the client after adding/installing; confirm the endpoint URL is exactly `https://mcp.apollo.io/mcp`. |
+| Tools do not appear | Confirm the server is enabled and authenticated, and (for Copilot) that chat is in **Agent** mode. |
+| "Permission denied" on an action | Your Apollo.io account may lack the required permission for that action. |
+| Credits unavailable | Enrichment and some actions require Apollo credits; confirm your workspace has credits available. |
+| Client does not support Streamable HTTP | Use a client that supports the Streamable HTTP transport, or the generic config in [Generic MCP Client Configuration](#generic-mcp-client-configuration). |
+| Invalid JSON in config | Validate your `mcp.json` / client config with a JSON linter — a trailing comma or missing brace will prevent the server from loading. |
+| Corporate proxy or firewall blocks the endpoint | Ensure `https://mcp.apollo.io` is reachable through your network/proxy allowlist. |
+
+---
+
+## Official MCP Registry
+
+This server is published and **active** in the official [Model Context Protocol Registry](https://registry.modelcontextprotocol.io/).
+
+| Field | Value |
+|---|---|
+| Registry name | `io.github.apolloio/apollo-mcp` |
+| Version | `0.1.1` |
+| Transport | Streamable HTTP |
+| Endpoint | `https://mcp.apollo.io/mcp` |
+
+> Publication in the official Model Context Protocol Registry is separate from the **curated GitHub MCP Registry** and the VS Code MCP gallery. Being active in the official registry does not automatically make the server discoverable in those curated catalogs.
+
+---
+
+## Development and Contribution
+
+This repository contains the Apollo MCP client configuration, the Claude/Cursor plugin manifests, workflow skills, and the registry metadata. The MCP server itself is hosted by Apollo.io.
+
+Repository layout:
+
+| Path | Purpose |
+|---|---|
+| `.mcp.json` | Remote MCP server definition (`apollo` → `https://mcp.apollo.io/mcp`). |
+| `server.json` | Official MCP Registry metadata (name, version, transport, endpoint). |
+| `.claude-plugin/` | Claude Code / Cowork plugin and marketplace manifests. |
+| `.cursor-plugin/` | Cursor plugin manifest. |
+| `glama.json` | Glama MCP directory metadata. |
+| `skills/` | Workflow skills: `prospect`, `enrich-lead`, `sequence-load`, `analytics`. |
+| `.github/workflows/publish-mcp.yml` | CI that publishes `server.json` to the MCP Registry. |
+
+### Validating `server.json`
+
+`server.json` follows the MCP server schema referenced at the top of the file. Publication is automated by the CI workflow (see below), which downloads the official `mcp-publisher` and runs `mcp-publisher publish`.
+
+```text
+TODO: Confirm whether a local validation/lint command (for example, a `mcp-publisher validate` step) is part of the intended contributor workflow.
 ```
 
-#### 3. Restart Claude Code
-
-This ensures the MCP server starts correctly.
-
-### Cursor
-
-1. Open Cursor and go to the Plugin Marketplace
-2. Search for "Apollo" and install
-3. Authenticate with your Apollo.io account when prompted
+Contributions are welcome via pull requests. Please keep version metadata consistent across `server.json`, `.claude-plugin/plugin.json`, and `.cursor-plugin/plugin.json`.
 
 ---
 
-## 🔑 Authentication
+## Versioning and Releases
 
-The Apollo MCP Server supports **OAuth**:
+- The server version is declared in **`server.json`** (`version: 0.1.1`) and mirrored in the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`).
+- On every push to `main` that changes `server.json`, the [`publish-mcp.yml`](.github/workflows/publish-mcp.yml) workflow publishes the new version to the **official Model Context Protocol Registry** (authenticating via GitHub OIDC).
+- Keep the version in `server.json` and the plugin manifests aligned before publishing, so the repository and the registry stay in sync.
 
-1. After installation, run `/mcp` in Claude Code or `connect` to Apollo.io connector from settings
-2. Select the **Apollo** server and click **Authenticate**
-3. Complete the Apollo.io login in your browser
-4. Done — all commands are now ready to use
-
----
-
-## **⚠️** Apollo Credits and Safety
-
-Some operations consume Apollo credits:
-
-- People enrichment typically costs 1 credit per person
-- Bulk enrichment consumes credits based on how many people are enriched
-
-This plugin is designed to warn and request confirmation before credit-consuming actions by default.
-
-Sequence safety:
-
-- Adding contacts to a sequence can enroll them into an active sequence
-- Depending on your sequence settings, outbound may start automatically
-- Always verify your sequence name, sending account, and enrollment volume before confirming
+```text
+TODO: Confirm whether GitHub Releases/tags are also cut per version, and document that process if so.
+```
 
 ---
 
-## Quickstart Examples
+## Security
 
-Try these in Claude:
+There is currently no `SECURITY.md` in this repository.
 
-- “Enrich this lead: [https://www.linkedin.com/in/…”](https://www.linkedin.com/in/%E2%80%A6%E2%80%9D)
-- “Find 25 VP Sales at SaaS companies (200-1000 employees) that raised funding in the last 6 months.”
-- “Load the top 10 enriched leads into my sequence called ‘Q1 Enterprise Outbound’ and show me a preview before enrolling.”
-- “Show me email and call performance by rep for this quarter, sorted by calls made.”
+```text
+TODO: Add a SECURITY.md file describing the responsible vulnerability disclosure process.
+```
+
+Please do **not** report security vulnerabilities through public GitHub issues.
+
+```text
+TODO: Confirm the private security contact (for example, a security@ address or a disclosure form) with the Apollo MCP maintainers.
+```
 
 ---
 
-## 🙌 Credits
+## Support
+
+| Need | Where to go |
+|---|---|
+| Apollo product support (data, credits, account, billing) | [Apollo.io](https://www.apollo.io/) support channels |
+| MCP integration bugs (this repository) | Open a GitHub issue on [apolloio/apollo-mcp-plugin](https://github.com/apolloio/apollo-mcp-plugin/issues) |
+| Feature requests | Open a GitHub issue on [apolloio/apollo-mcp-plugin](https://github.com/apolloio/apollo-mcp-plugin/issues) |
+| Security vulnerabilities | Do not open a public issue — see [Security](#security) |
+
+```text
+TODO: Confirm the exact Apollo product support URL and the preferred contact channel for MCP integration bugs and feature requests with the Apollo MCP maintainers.
+```
+
+---
+
+## Credits
 
 - **MCP Server** by [Apollo.io](https://docs.apollo.io/)
-- **Plugin Specification** by [Anthropic](https://docs.anthropic.com/)
+- **Plugin specification** by [Anthropic](https://docs.anthropic.com/)
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE) for details. Copyright (c) 2025 Apollo.io.
