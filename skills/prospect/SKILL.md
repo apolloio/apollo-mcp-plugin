@@ -15,16 +15,16 @@ If a role plus at least one account signal is present, make one concise, correct
 
 ## 2. Search and Rank
 
-Use `apollo_mixed_people_api_search` for people. Use `apollo_organizations_lookup` only to resolve a fuzzy company name or domain into lightweight organization candidates and an Apollo organization ID. Organization lookup is free discovery and does not require credit confirmation.
+Use `apollo_mixed_people_api_search` for people. Use `apollo_organizations_lookup` by default for free, shallow organization discovery from a fuzzy name, domain, or supported discovery filters such as employee range, location, revenue, technology, or funding. It returns lightweight candidates and Apollo organization IDs and does not require credit confirmation.
 
-Do not treat organization lookup as filtered company prospecting: it does not replace industry, employee-count, funding, technology, or website-visitor company search. For filtered company prospecting, use `apollo_mixed_companies_search` only after explaining that a result-returning request costs exactly 1 credit and asking exactly:
+Use `apollo_mixed_companies_search` only when the user explicitly needs full organization details in the search results. Explain that a result-returning request costs exactly 1 credit and ask exactly:
 
 ```text
 This will consume 1 credit. Do you want to proceed?
 ```
 
 If the paid tool is unavailable or the user declines, state that limitation instead of silently broadening the request.
-If `apollo_organizations_lookup` is unavailable, report that limitation; do not substitute paid company search unless the user separately requests filtered prospecting and approves its one-credit cost.
+If `apollo_organizations_lookup` is unavailable, report that limitation; do not substitute paid company search unless the user separately requests full organization details and approves its one-credit cost.
 
 People search and organization lookup are read-only. When organization lookup returns multiple candidates, show the candidate name, domain, and website, then ask the user to choose before using an organization ID in a later action. Show people-search results with name or masked name, title, company, location, fit level, and fit reason. Do not include private emails, phones, or unnecessary internal identifiers.
 

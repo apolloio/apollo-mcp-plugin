@@ -307,8 +307,8 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 | Tool | Description | Data effect | Credit / external effect |
 |---|---|---|---|
 | `apollo_mixed_people_api_search` | Search Apollo's people database by title, seniority, location, and company filters. | Reads | No |
-| `apollo_mixed_companies_search` | Search Apollo's organization database by industry, size, location, and keywords. | Reads | **Yes - 1 credit when results are returned.** |
-| `apollo_organizations_lookup` | Resolve a name or domain to lightweight organization candidates and an Apollo organization ID. Release gated; see below. | Reads | No |
+| `apollo_mixed_companies_search` | Return full organization details for a structured company search. | Reads | **Yes - 1 credit when results are returned.** |
+| `apollo_organizations_lookup` | Find lightweight organization candidates and IDs by name, domain, or supported discovery filters. Release gated; see below. | Reads | No |
 | `apollo_users_api_profile` | Verify the authenticated Apollo user and workspace context. | Reads | No |
 | `apollo_people_match` | Match and enrich a single person from available identifiers. | Reads / enriches | **1 credit per match; reveals may add variable credits.** |
 | `apollo_people_bulk_match` | Match and enrich multiple people in one call. | Reads / enriches | **Up to 1 credit per match; reveals may add variable credits.** |
@@ -328,9 +328,9 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 
 ### Public skill release gate
 
-The canonical free lookup name is `apollo_organizations_lookup`. It is limited to shallow name/domain candidate and Apollo organization-ID resolution; it does not replace filtered company prospecting. Filtered company prospecting uses `apollo_mixed_companies_search`, which costs exactly 1 credit when a request returns results and requires confirmation immediately before the call.
+The canonical free lookup name is `apollo_organizations_lookup`. It is the default for shallow organization discovery by name, domain, or supported filters and returns lightweight candidate records plus Apollo organization IDs. Use `apollo_mixed_companies_search` only when the user explicitly needs full organization details in the search response; it costs exactly 1 credit when a request returns results and requires confirmation immediately before the call.
 
-Do not publish catalog version `0.2.0` until the production Apollo MCP `tools/list` response includes `apollo_organizations_lookup` and a read-only name/domain smoke test succeeds. Until then, the prospect skill must report that free organization lookup is unavailable. It must not silently substitute the paid company-search tool or claim a result that was not verified.
+Do not publish catalog version `0.2.0` until `apollo_organizations_lookup` is available to the intended public production audience and a read-only shallow-discovery smoke test succeeds in a representative workspace. Availability to a rollout-enabled workspace alone does not satisfy this gate. Until then, the prospect skill must report that free organization lookup is unavailable. It must not silently substitute the paid company-search tool or claim a result that was not verified.
 
 ---
 
