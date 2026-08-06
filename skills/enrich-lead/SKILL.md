@@ -1,80 +1,54 @@
 ---
 name: enrich-lead
-description: "Instant lead enrichment. Drop a name, company, LinkedIn URL, or email and get the full contact card with email, phone, title, company intel, and next actions."
-user-invocable: true
-argument-hint: [name, company, LinkedIn URL, or email]
+description: "Resolve and enrich a lead with Apollo using staged approvals. Use when identifying a person, adding company context, requesting contact details, saving a matched contact, or reviewing one ambiguous lead."
 ---
 
 # Enrich Lead
 
-Turn any identifier into a full contact dossier. The user provides identifying info via "$ARGUMENTS".
+Resolve one lead before spending credits, then keep credit use, private-data reveal, and contact writes as separate decisions. Return a seller-facing contact card, not a raw payload.
 
-## Examples
+## 1. Resolve Search-Only Candidates
 
-- `/apollo:enrich-lead Tim Zheng at Apollo`
-- `/apollo:enrich-lead https://www.linkedin.com/in/timzheng`
-- `/apollo:enrich-lead sarah@stripe.com`
-- `/apollo:enrich-lead Jane Smith, VP Engineering, Notion`
-- `/apollo:enrich-lead CEO of Figma`
+Parse the available name, company, domain, profile URL, title, or other non-secret identifier. Use `apollo_mixed_people_api_search` to disambiguate when necessary and show at most three candidates with name or masked name, title, company, location, and a confidence note.
 
-## Step 1 — Parse Input
+Do not show private email addresses or phone numbers during search-only review. If there is no clear match, ask the user to choose or refine a candidate before enrichment.
 
-From "$ARGUMENTS", extract every identifier available:
-- First name, last name
-- Company name or domain
-- LinkedIn URL
-- Email address
-- Job title (use as a matching hint)
+## 2. Confirm Credit Use
 
-If the input is ambiguous (e.g. just "CEO of Figma"), first use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with relevant title and domain filters to identify the person, then proceed to enrichment.
+Use `apollo_people_match` only after showing the selected identity. Immediately before the call, use the exact credit-confirmation wording required by the current tool description, replacing its placeholders with the selected person.
 
-## Step 2 — Enrich the Person
+Do not enrich until the user explicitly agrees to that credit step. Credit approval does not approve private-data reveal or a contact write.
 
-> **Credit warning**: Tell the user enrichment consumes 1 Apollo credit before calling.
+For optional company context from `apollo_organizations_enrich`, ask the separate exact confirmation required by that tool's current description.
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_people_match` with all available identifiers:
-- `first_name`, `last_name` if name is known
-- `domain` or `organization_name` if company is known
-- `linkedin_url` if LinkedIn is provided
-- `email` if email is provided
-- Set `reveal_personal_emails` to `true`
+## 3. Confirm Private-Data Reveal
 
-If the match fails, try `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with looser filters and present the top 3 candidates. Ask the user to pick one, then re-enrich.
+Before offering any email or phone reveal, call `apollo_users_api_profile` once with `include_waterfall_capability: true`. Reuse the returned team-level email and phone capability flags for the rest of the conversation.
 
-## Step 3 — Enrich Their Company
+- When waterfall is enabled for the requested field, use the matching waterfall option by default and use the exact variable-cost confirmation required by `apollo_people_match`. Never quote a fixed waterfall cost.
+- When waterfall is not enabled, use the standard reveal path and its exact confirmation. If the user explicitly requested waterfall, use the tool's required disabled-capability message and run a standard reveal only if the user accepts that alternative.
+- Before any phone reveal or waterfall request, verify that `apollo_webhook_result_show` is available. If it is unavailable, do not start the request or spend credits; ask the user to reconnect Apollo.
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_organizations_enrich` with the person's company domain to pull firmographic context.
+For a standard personal-email reveal, preview the selected count and ask exactly:
 
-## Step 4 — Present the Contact Card
+```text
+This will reveal private contact data for [N] selected people. Do you want me to reveal it now?
+```
 
-Format the output exactly like this:
+Do not reveal those fields without an explicit answer to this separate question. The match still requires the exact 1-credit confirmation immediately before the call. A prior enrichment approval is not reveal approval.
 
----
+For a standard phone reveal, use the one combined enrichment-and-phone confirmation required by `apollo_people_match`; do not ask for enrichment and phone approval in separate turns. For any accepted asynchronous phone or waterfall request, poll `apollo_webhook_result_show` with the exact top-level request ID and the timing rules in the current tool description. Do not claim a phone number or waterfall result until polling succeeds.
 
-**[Full Name]** | [Title]
-[Company Name] · [Industry] · [Employee Count] employees
+## 4. Present the Result
 
-| Field | Detail |
-|---|---|
-| Email (work) | ... |
-| Email (personal) | ... (if revealed) |
-| Phone (direct) | ... |
-| Phone (mobile) | ... |
-| Phone (corporate) | ... |
-| Location | City, State, Country |
-| LinkedIn | URL |
-| Company Domain | ... |
-| Company Revenue | Range |
-| Company Funding | Total raised |
-| Company HQ | Location |
+Show only returned and approved fields: name, title, company, location, profile URL, company domain, company size, company context, and approved contact details. Mark uncertain matches and omit unavailable values. Do not expose internal identifiers unless a separately confirmed next action needs them.
 
----
+## 5. Confirm Contact Writes
 
-## Step 5 — Offer Next Actions
+If the user asks to save the lead, preview the exact fields. Use `apollo_contacts_create` only after asking:
 
-Ask the user which action to take:
+```text
+This will create or update [N] Apollo contact records. Matching contacts may have the submitted fields overwritten, and that cannot be undone. Do you want me to make that contact write now?
+```
 
-1. **Save to Apollo** — Create this person as a contact via `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with `run_dedupe: true`
-2. **Add to a sequence** — Ask which sequence, then run the sequence-load flow
-3. **Find colleagues** — Search for more people at the same company using `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with `q_organization_domains_list` set to this company
-4. **Find similar people** — Search for people with the same title/seniority at other companies
+Do not treat enrichment, reveal, or sequencing intent as contact-write approval. Submit only the confirmed fields, summarize the returned result after the write, and do not assume whether Apollo created or updated the record.
