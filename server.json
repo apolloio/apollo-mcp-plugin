@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.apolloio/apollo-mcp",
+  "title": "Apollo.io",
+  "description": "Prospect, enrich leads, and manage outreach sequences with Apollo.io.",
+  "repository": {
+    "url": "https://github.com/apolloio/apollo-mcp-plugin.git",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "websiteUrl": "https://www.apollo.io/",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.apollo.io/mcp"
+    }
+  ]
+}
