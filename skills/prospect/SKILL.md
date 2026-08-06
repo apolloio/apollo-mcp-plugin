@@ -30,38 +30,46 @@ People search and organization lookup are read-only. When organization lookup re
 
 Rank as Strong, Good, or Partial based on title, seniority, account fit, geography, and other requested signals. State filters, assumptions, result count, and that the shortlist is search-only.
 
+Select at most 10 people for enrichment in one run. If the user requests more, do not loop `apollo_people_bulk_match` across conversational batches. Explain that larger jobs require Apollo's persistent collection workflow and keep this skill to a reviewed 10-person batch.
+
 ## 3. Confirm Selected Enrichment
 
-Use `apollo_users_api_profile` to obtain the current credit balance when available. Before `apollo_people_bulk_match`, preview the selected count, maximum charge, and returned balance. Replace the placeholder and ask exactly:
+Use `apollo_users_api_profile` with `include_credit_usage: true` and `include_waterfall_capability: true` to obtain the current balance and the team-level email and phone waterfall flags in one call. Reuse those capability flags for the rest of the conversation. Before `apollo_people_bulk_match`, preview the selected count, maximum standard-match charge, and returned balance. Replace the placeholder and ask exactly:
 
 ```text
-This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?
+Found [N] contacts. Enriching all will use up to [N] credits. You have [X] credits remaining. Do you want to proceed?
 ```
 
-Do not enrich unselected rows. If the balance is unavailable, say so rather than estimating it. Credit approval does not approve private-data reveal, contact writes, or sequencing.
+Do not enrich unselected rows. If the balance is unavailable, stop and ask the user to reconnect Apollo rather than estimating it. Credit approval does not approve private-data reveal, contact writes, or sequencing.
 
 ## 4. Confirm Private-Data Reveal
 
-Before requesting reveal options or displaying private contact fields, preview the selected count and ask exactly:
+Use the capability flags before offering any email or phone reveal:
+
+- When waterfall is enabled for the requested field, use the matching waterfall option by default and the exact search-then-enrich variable-cost confirmation from `apollo_people_bulk_match`, including the returned balance. Never quote a fixed waterfall cost.
+- When waterfall is not enabled, use the standard reveal path. If the user explicitly requested waterfall, use the tool's required disabled-capability message and run a standard reveal only if the user accepts that alternative.
+- Before any phone reveal or waterfall request, verify that `apollo_webhook_result_show` is available. If it is unavailable, do not start the request or spend credits; ask the user to reconnect Apollo.
+
+For a standard personal-email reveal, preview the selected count and ask exactly:
 
 ```text
 This will reveal private contact data for [N] selected people. Do you want me to reveal it now?
 ```
 
-For personal-email reveal, keep this approval separate and then repeat the exact bulk-enrichment credit confirmation immediately before the call. Phone reveal instead requires one combined confirmation; do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, ask exactly:
+Keep that personal-email approval separate and then repeat the exact bulk-enrichment credit confirmation immediately before the call. A standard phone reveal instead requires one combined confirmation; do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, ask exactly:
 
 ```text
-This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?
+Found [N] contacts. Enriching all will use up to [N] credits, plus additional credits for each phone number successfully revealed (no charge if a number isn't found). You have [X] credits remaining. Do you want to proceed?
 ```
 
-Request phone reveal only when the visible `apollo_people_bulk_match` schema supports it. Follow that tool's exact confirmation and asynchronous polling instructions, including the documented request-ID field and polling tool. Do not assume a top-level or nested ID, and do not invent a polling tool. If the complete reveal-and-poll contract is unavailable, report that phone reveal is unsupported. Do not claim that phone numbers were returned until the documented polling flow succeeds.
+For any accepted asynchronous phone or waterfall request, poll `apollo_webhook_result_show` with the exact top-level request ID and the timing rules in the current tool description. Do not claim a phone number or waterfall result until polling succeeds.
 
 ## 5. Confirm Contact Writes
 
-If the user asks to save selected prospects through `apollo_contacts_bulk_create`, preview the exact count and fields, warn that the bulk tool may create a new record for every submitted item, and ask:
+If the user asks to save selected prospects through `apollo_contacts_bulk_create`, preview the exact count and fields and explain that Apollo automatically updates matching contacts, overwriting submitted fields irreversibly. Ask:
 
 ```text
-This will create [N] Apollo contact records. Duplicate handling depends on the active Apollo tool contract. Do you want me to make that contact write now?
+This will create or update [N] Apollo contact records. Matching contacts may have the submitted fields overwritten, and that cannot be undone. Do you want me to make that contact write now?
 ```
 
 Do not infer write approval from enrichment or reveal approval. Submit the confirmed contacts as one bulk request only after reviewing the input for duplicates. After any confirmed action, return the updated shortlist with per-row status, actual or expected credits, and errors. Route sequence requests to `sequence-load`; do not enroll contacts from this workflow.

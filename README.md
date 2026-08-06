@@ -276,12 +276,27 @@ If you installed the Claude Code / Cowork plugin, the same workflows are availab
 
 The remote server provides the underlying Apollo tools; the tools listed below are those **confirmed in this repository** through the bundled workflow skills. The full, authoritative tool set is provided by the remote server and may evolve independently of this document.
 
+### Public skill source and portability
+
+The canonical public source for each workflow is `skills/<id>/SKILL.md`. `catalog/skills.json` records the five-skill inventory and the Apollo tools each workflow requires.
+
+| Skill | Purpose | Safety boundary |
+|---|---|---|
+| `onboarding` | Verify Apollo MCP and choose a workflow | Read-only verification |
+| `analytics` | Answer sales performance questions | Read-only reporting |
+| `enrich-lead` | Resolve and enrich one lead | Separate credit, private-data, and contact-write approvals |
+| `prospect` | Turn an ICP into a ranked shortlist | Search first; separate enrichment, reveal, and write approvals |
+| `sequence-load` | Prepare and enroll selected contacts | Separate credit, reveal, write, enrollment, activation, and send approvals |
+
+The skills are optional: Apollo MCP remains usable without them. Skill delivery differs by client, and a working MCP connection does not prove that the client installed or discovered these files. Verify the five skill names in the client's skill or plugin interface before relying on them. The portable `SKILL.md` files use standard `name` and `description` frontmatter plus unqualified Apollo tool names; client-specific setup commands belong in this README.
+
 ### Workflow skills (Claude Code / Cowork plugin)
 
 High-value skills that chain multiple Apollo tools into complete workflows:
 
 | Skill | What it does |
 |---|---|
+| `/apollo:onboarding` | Verify the Apollo MCP connection and choose a safe workflow. |
 | `/apollo:enrich-lead` | Drop a name, LinkedIn URL, or email and get a full contact card with company context and next actions. |
 | `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers. |
 | `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment. |
@@ -289,15 +304,20 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 
 ### Underlying Apollo tools referenced by the skills
 
-| Tool | Description | Data effect | Outreach / external action |
+| Tool | Description | Data effect | Credit / external effect |
 |---|---|---|---|
 | `apollo_mixed_people_api_search` | Search Apollo's people database by title, seniority, location, and company filters. | Reads | No |
-| `apollo_mixed_companies_search` | Search Apollo's organization database by industry, size, location, and keywords. | Reads | No |
-| `apollo_people_match` | Match and enrich a single person from available identifiers. | Reads / enriches | No |
-| `apollo_people_bulk_match` | Match and enrich multiple people in one call. | Reads / enriches | No |
-| `apollo_organizations_enrich` | Enrich a single organization. | Reads / enriches | No |
-| `apollo_organizations_bulk_enrich` | Enrich multiple organizations in one call. | Reads / enriches | No |
+| `apollo_mixed_companies_search` | Search Apollo's organization database by industry, size, location, and keywords. | Reads | **Yes - 1 credit when results are returned.** |
+| `apollo_organizations_lookup` | Resolve a name or domain to lightweight organization candidates and an Apollo organization ID. Release gated; see below. | Reads | No |
+| `apollo_users_api_profile` | Verify the authenticated Apollo user and workspace context. | Reads | No |
+| `apollo_people_match` | Match and enrich a single person from available identifiers. | Reads / enriches | **1 credit per match; reveals may add variable credits.** |
+| `apollo_people_bulk_match` | Match and enrich multiple people in one call. | Reads / enriches | **Up to 1 credit per match; reveals may add variable credits.** |
+| `apollo_webhook_result_show` | Poll an accepted asynchronous phone or waterfall enrichment request. | Reads | No |
+| `apollo_organizations_enrich` | Enrich a single organization. | Reads / enriches | **1 credit when found.** |
+| `apollo_organizations_bulk_enrich` | Enrich multiple organizations in one call. | Reads / enriches | **Up to 1 credit per matched company.** |
 | `apollo_contacts_create` | Create a contact in the Apollo workspace. | Changes Apollo data | No |
+| `apollo_contacts_bulk_create` | Create selected contacts in the Apollo workspace. | Changes Apollo data | No |
+| `apollo_contacts_search` | Resolve existing Apollo contact IDs for a reviewed membership change. | Reads | No |
 | `apollo_emailer_campaigns_search` | Find outreach sequences by name. | Reads | No |
 | `apollo_emailer_campaigns_add_contact_ids` | Add contacts to an outreach sequence. | Changes Apollo data | **Yes — may start outbound depending on sequence settings.** |
 | `apollo_emailer_campaigns_remove_or_stop_contact_ids` | Remove or stop contacts in an outreach sequence. | Changes Apollo data | Affects active outreach |
@@ -306,13 +326,19 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 
 > Some actions (such as enrichment) consume Apollo credits. For per-tool credit costs and the authoritative, up-to-date tool reference, see the [Apollo documentation](https://docs.apollo.io).
 
+### Public skill release gate
+
+The canonical free lookup name is `apollo_organizations_lookup`. It is limited to shallow name/domain candidate and Apollo organization-ID resolution; it does not replace filtered company prospecting. Filtered company prospecting uses `apollo_mixed_companies_search`, which costs exactly 1 credit when a request returns results and requires confirmation immediately before the call.
+
+Do not publish catalog version `0.2.0` until the production Apollo MCP `tools/list` response includes `apollo_organizations_lookup` and a read-only name/domain smoke test succeeds. Until then, the prospect skill must report that free organization lookup is unavailable. It must not silently substitute the paid company-search tool or claim a result that was not verified.
+
 ---
 
 ## Model Recommendations
 
 For clients where you can choose a model (for example, Claude Code via `/model`):
 
-- **Opus (best quality)** — strongest reasoning and the most reliable multi-step tool orchestration. Best for prospecting workflows, ambiguous matches, multi-step chaining, and high-stakes tasks. Tradeoff: higher latency and usage cost.
+- **[Fable 5](https://www.anthropic.com/claude/fable) (most capable)** — strongest choice for long, ambiguous, or high-stakes prospecting and multi-step orchestration. Availability depends on the user's Claude plan and client. Tradeoff: higher latency and usage cost.
 - **Sonnet (faster)** — good for quick lookups, lightweight enrichment, and rapid iteration. Tradeoff: may need more guidance on complex multi-step workflows.
 
 ---
@@ -353,6 +379,8 @@ For Apollo.io's official privacy and security resources:
 | Authentication session expired | Re-authenticate (in Claude Code, run `/mcp` → **apollo** → authenticate). |
 | Server is not starting | Restart the client after adding/installing; confirm the endpoint URL is exactly `https://mcp.apollo.io/mcp`. |
 | Tools do not appear | Confirm the server is enabled and authenticated, and (for Copilot) that chat is in **Agent** mode. |
+| A public skill does not appear | Confirm the client installed and discovered the skill files. MCP connectivity alone does not prove skill delivery. |
+| A skill reports a required tool is unavailable | Stop that workflow and compare the client's current Apollo `tools/list` response with the tool required by the skill. Do not substitute a paid or state-changing tool. |
 | "Permission denied" on an action | Your Apollo.io account may lack the required permission for that action. |
 | Credits unavailable | Enrichment and some actions require Apollo credits; confirm your workspace has credits available. |
 | Client does not support Streamable HTTP | Use a client that supports the Streamable HTTP transport, or the generic config in [Generic MCP Client Configuration](#generic-mcp-client-configuration). |
@@ -389,7 +417,9 @@ Repository layout:
 | `.claude-plugin/` | Claude Code / Cowork plugin and marketplace manifests. |
 | `.cursor-plugin/` | Cursor plugin manifest. |
 | `glama.json` | Glama MCP directory metadata. |
-| `skills/` | Workflow skills: `prospect`, `enrich-lead`, `sequence-load`, `analytics`. |
+| `catalog/skills.json` | Public skill inventory and required Apollo tool contracts. |
+| `scripts/validate-skills.mjs` | Dependency-free public skill and release-hygiene validator. |
+| `skills/` | Public workflow skills: `onboarding`, `analytics`, `enrich-lead`, `prospect`, `sequence-load`. |
 | `.github/workflows/publish-mcp.yml` | CI that publishes `server.json` to the MCP Registry. |
 
 ### Validating `server.json`
@@ -403,6 +433,16 @@ mcp-publisher publish --dry-run
 ```
 
 Contributions are welcome via pull requests. Please keep version metadata consistent across `server.json`, `.claude-plugin/plugin.json`, and `.cursor-plugin/plugin.json`.
+
+### Validating public skills
+
+Run the dependency-free repository check:
+
+```bash
+node scripts/validate-skills.mjs
+```
+
+It validates the five-skill inventory, frontmatter, UTF-8 encoding, public-content hygiene, declared tool references, and manifest alignment. The public release does not include an installer, private skills, internal evaluation artifacts, packages, or lockfiles.
 
 ---
 

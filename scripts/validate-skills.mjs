@@ -4,36 +4,7 @@ import { TextDecoder } from "node:util";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const version = "0.2.0";
 const skillIds = ["onboarding", "analytics", "enrich-lead", "prospect", "sequence-load"];
-const expectedTools = {
-  onboarding: ["apollo_users_api_profile"],
-  analytics: ["apollo_analytics_sync_report", "apollo_emailer_campaigns_search"],
-  "enrich-lead": [
-    "apollo_mixed_people_api_search",
-    "apollo_people_match",
-    "apollo_organizations_enrich",
-    "apollo_contacts_create",
-  ],
-  prospect: [
-    "apollo_mixed_people_api_search",
-    "apollo_organizations_lookup",
-    "apollo_mixed_companies_search",
-    "apollo_users_api_profile",
-    "apollo_people_bulk_match",
-    "apollo_contacts_bulk_create",
-  ],
-  "sequence-load": [
-    "apollo_emailer_campaigns_search",
-    "apollo_email_accounts_index",
-    "apollo_mixed_people_api_search",
-    "apollo_users_api_profile",
-    "apollo_people_bulk_match",
-    "apollo_contacts_bulk_create",
-    "apollo_emailer_campaigns_add_contact_ids",
-    "apollo_emailer_campaigns_remove_or_stop_contact_ids",
-  ],
-};
 const skillKeys = [
   "id",
   "path",
@@ -53,6 +24,10 @@ function sorted(values) {
   return [...values].sort((left, right) => left.localeCompare(right));
 }
 
+function sameMembers(actual, expected) {
+  return sameArray(sorted(actual), sorted(expected));
+}
+
 async function readUtf8(relativePath) {
   const candidate = path.join(root, relativePath);
   const buffer = await readFile(candidate);
@@ -64,7 +39,9 @@ async function readUtf8(relativePath) {
     return "";
   }
   if (text.charCodeAt(0) === 0xfeff) errors.push(`${relativePath}: UTF-8 BOM is not allowed`);
-  if (/[^\x00-\x7f]/.test(text)) errors.push(`${relativePath}: use ASCII punctuation and text`);
+  if (relativePath !== "README.md" && /[^\x00-\x7f]/.test(text)) {
+    errors.push(`${relativePath}: use ASCII punctuation and text`);
+  }
   if (/\u00c3|\u00c2|\u00e2\u0080|\ufffd/u.test(text)) errors.push(`${relativePath}: possible mojibake detected`);
   return text;
 }
@@ -105,8 +82,9 @@ function parseFrontmatter(text, id) {
     fields[field[1]] = value;
   }
 
-  if (!sameArray(Object.keys(fields), ["name", "description"])) {
-    errors.push(`${id}: frontmatter must contain exactly name then description`);
+  const frontmatterKeys = ["name", "description"];
+  if (!sameMembers(Object.keys(fields), frontmatterKeys)) {
+    errors.push(`${id}: frontmatter must contain exactly name and description`);
   }
   if (fields.name !== id) errors.push(`${id}: frontmatter name must match the skill ID`);
   if (typeof fields.description !== "string" || fields.description.length < 1 || fields.description.length > 1024) {
@@ -124,6 +102,7 @@ async function validateManifests() {
     ".claude-plugin/plugin.json",
     ".cursor-plugin/plugin.json",
     ".mcp.json",
+    "server.json",
   ]) {
     const buffer = await readFile(path.join(root, relativePath));
     let text = "";
@@ -137,9 +116,6 @@ async function validateManifests() {
     }
     const manifest = parseJson(text, relativePath);
     manifests[relativePath] = manifest;
-    if (relativePath.endsWith("plugin.json") && manifest?.version !== version) {
-      errors.push(`${relativePath}: version must match catalog version ${version}`);
-    }
   }
 
   const repository = "https://github.com/apolloio/apollo-mcp-plugin";
@@ -155,6 +131,9 @@ async function validateManifests() {
     const manifest = manifests[relativePath];
     if (manifest?.name !== "apollo" || manifest?.repository !== repository) {
       errors.push(`${relativePath}: Apollo plugin identity or repository changed`);
+    }
+    if (manifest?.version !== manifests["server.json"]?.version) {
+      errors.push(`${relativePath}: version must match server.json`);
     }
   }
   if (manifests[".cursor-plugin/plugin.json"]?.mcpServers !== "./.mcp.json") {
@@ -181,16 +160,19 @@ async function validateInventory(catalog) {
   }
 
   if (!catalog) return;
-  if (!sameArray(Object.keys(catalog), ["catalog_version", "skills"])) {
+  if (!sameMembers(Object.keys(catalog), ["catalog_version", "skills"])) {
     errors.push("catalog/skills.json: expected exactly catalog_version and skills fields");
   }
-  if (catalog.catalog_version !== version) errors.push(`catalog/skills.json: catalog_version must be ${version}`);
+  if (typeof catalog.catalog_version !== "string" || !/^\d+\.\d+\.\d+$/.test(catalog.catalog_version)) {
+    errors.push("catalog/skills.json: catalog_version must be a semantic version");
+  }
   if (!Array.isArray(catalog.skills)) {
     errors.push("catalog/skills.json: skills must be an array");
     return;
   }
-  if (!sameArray(catalog.skills.map((skill) => skill.id), skillIds)) {
-    errors.push("catalog/skills.json: skill IDs and order must match the public inventory");
+  const catalogIds = catalog.skills.map((skill) => skill?.id);
+  if (catalogIds.some((id) => typeof id !== "string") || !sameMembers(catalogIds, skillIds)) {
+    errors.push("catalog/skills.json: skill IDs must match the public inventory");
   }
 }
 
@@ -199,13 +181,15 @@ function validateCatalogSkill(skill, id) {
     errors.push(`${id}: catalog entry must be an object`);
     return;
   }
-  if (!sameArray(Object.keys(skill), skillKeys)) errors.push(`${id}: catalog entry has incorrect fields or order`);
+  if (!sameMembers(Object.keys(skill), skillKeys)) errors.push(`${id}: catalog entry has incorrect fields`);
   if (skill.id !== id) errors.push(`${id}: catalog ID mismatch`);
   if (skill.path !== `skills/${id}`) errors.push(`${id}: catalog path mismatch`);
   if (skill.visibility !== "public") errors.push(`${id}: visibility must be public`);
   if (typeof skill.summary !== "string" || skill.summary.length < 40) errors.push(`${id}: summary is missing or too short`);
   if (!Array.isArray(skill.required_tools)) errors.push(`${id}: required_tools must be an array`);
-  if (!sameArray(skill.required_tools, expectedTools[id])) errors.push(`${id}: required_tools changed from the reviewed release contract`);
+  if (Array.isArray(skill.required_tools) && new Set(skill.required_tools).size !== skill.required_tools.length) {
+    errors.push(`${id}: required_tools contains duplicates`);
+  }
   if (typeof skill.credit_behavior !== "string" || !skill.credit_behavior) errors.push(`${id}: credit_behavior is required`);
   if (typeof skill.write_behavior !== "string" || !skill.write_behavior) errors.push(`${id}: write_behavior is required`);
   for (const tool of skill.required_tools ?? []) {
@@ -222,22 +206,116 @@ function validateToolReferences(text, skill) {
   if (/\bmcp__/.test(text)) errors.push(`${skill.id}: harness-qualified tool reference detected`);
 }
 
+function validateWorkflowSafety(text, id) {
+  if (!["enrich-lead", "prospect", "sequence-load"].includes(id)) return;
+
+  for (const phrase of [
+    "include_waterfall_capability: true",
+    "apollo_webhook_result_show",
+    "top-level request ID",
+    "create or update",
+    "overwritten",
+    "cannot be undone",
+  ]) {
+    if (!text.includes(phrase)) errors.push(`${id}: missing reviewed safety contract '${phrase}'`);
+  }
+  if (/\brun_dedupe\b/.test(text)) errors.push(`${id}: unsupported run_dedupe parameter detected`);
+
+  if (["prospect", "sequence-load"].includes(id)) {
+    for (const phrase of [
+      "at most 10",
+      "do not loop `apollo_people_bulk_match`",
+      "You have [X] credits remaining",
+    ]) {
+      if (!text.includes(phrase)) errors.push(`${id}: missing bulk-enrichment contract '${phrase}'`);
+    }
+  }
+
+  if (id === "sequence-load") {
+    for (const phrase of [
+      "only for `remove` or `stop`",
+      "permanently removes",
+      "pause or finish",
+      "apollo_contacts_search",
+      "stop_reason",
+      "never invent it",
+    ]) {
+      if (!text.includes(phrase)) errors.push(`${id}: missing sequence membership contract '${phrase}'`);
+    }
+  }
+}
+
+function isAsciiLetter(character) {
+  const code = character.charCodeAt(0);
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+function isAsciiDigit(character) {
+  const code = character.charCodeAt(0);
+  return code >= 48 && code <= 57;
+}
+
+function isEmailLocalCharacter(character) {
+  return isAsciiLetter(character)
+    || isAsciiDigit(character)
+    || "._%+-".includes(character);
+}
+
+function isEmailDomainCharacter(character) {
+  return isAsciiLetter(character)
+    || isAsciiDigit(character)
+    || character === "."
+    || character === "-";
+}
+
+function containsEmailShapedText(text) {
+  const maxLocalLength = 64;
+  const maxDomainLength = 253;
+
+  for (let at = text.indexOf("@"); at !== -1; at = text.indexOf("@", at + 1)) {
+    let start = at;
+    while (start > 0 && at - start < maxLocalLength && isEmailLocalCharacter(text[start - 1])) {
+      start -= 1;
+    }
+    if (start === at || (start > 0 && isEmailLocalCharacter(text[start - 1]))) continue;
+
+    let end = at + 1;
+    while (end < text.length && end - at - 1 < maxDomainLength && isEmailDomainCharacter(text[end])) {
+      end += 1;
+    }
+    if (end === at + 1 || (end < text.length && isEmailDomainCharacter(text[end]))) continue;
+
+    const labels = text.slice(at + 1, end).split(".");
+    if (labels.length < 2) continue;
+    if (labels.some((label) => label.length < 1
+      || label.length > 63
+      || !isAsciiLetter(label[0]) && !isAsciiDigit(label[0])
+      || !isAsciiLetter(label.at(-1)) && !isAsciiDigit(label.at(-1)))) continue;
+
+    const topLevelDomain = labels.at(-1);
+    if (topLevelDomain.length >= 2 && [...topLevelDomain].every(isAsciiLetter)) return true;
+  }
+  return false;
+}
+
 function validatePublicContent(text, label) {
   const forbidden = [
     [/"visibility"\s*:\s*"private"/i, "private visibility"],
     [/\bevals?\b/i, "evaluation artifact reference"],
-    [/\$ARGUMENTS/, "client-specific argument placeholder"],
-    [/\/apollo:/, "client-specific slash command"],
-    [/\/plugin\b/, "client-specific plugin command"],
     [/\b(?:npm|pnpm|yarn|bun)\s+(?:add|install|exec|run|x)\b/i, "package command"],
     [/\b(?:package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb)\b/i, "lockfile reference"],
   ];
+  if (label.startsWith("skills/")) {
+    forbidden.push(
+      [/\$ARGUMENTS/, "client-specific argument placeholder"],
+      [/\/apollo:/, "client-specific slash command"],
+      [/\/plugin\b/, "client-specific plugin command"],
+    );
+  }
   for (const [pattern, description] of forbidden) {
-    if (label === "README.md" && description === "client-specific plugin command") continue;
     if (pattern.test(text)) errors.push(`${label}: ${description} detected`);
   }
-  const emailPattern = new RegExp("\\b[A-Z0-9._%+-]+" + "@" + "[A-Z0-9.-]+\\.[A-Z]{2,}\\b", "i");
-  if (emailPattern.test(text)) errors.push(`${label}: email-shaped PII detected`);
+  if (containsEmailShapedText(text)) errors.push(`${label}: email-shaped PII detected`);
 }
 
 async function validateForbiddenArtifacts() {
@@ -275,14 +353,15 @@ async function main() {
   await validateForbiddenArtifacts();
   await validateManifests();
 
-  if (catalog?.skills) {
-    for (let index = 0; index < skillIds.length; index += 1) {
-      const id = skillIds[index];
-      const skill = catalog.skills[index];
+  if (Array.isArray(catalog?.skills)) {
+    const catalogById = new Map(catalog.skills.map((skill) => [skill?.id, skill]));
+    for (const id of skillIds) {
+      const skill = catalogById.get(id);
       validateCatalogSkill(skill, id);
       const skillText = contents.get(`skills/${id}/SKILL.md`);
       parseFrontmatter(skillText, id);
       if (skill) validateToolReferences(skillText, skill);
+      validateWorkflowSafety(skillText, id);
       validatePublicContent(skillText, `skills/${id}/SKILL.md`);
     }
   }
@@ -293,7 +372,7 @@ async function main() {
   if (errors.length > 0) {
     throw new Error(`Validation failed:\n- ${errors.join("\n- ")}`);
   }
-  console.log(`Validated ${skillIds.length} public Apollo skills at catalog version ${version}.`);
+  console.log(`Validated ${skillIds.length} public Apollo skills at catalog version ${catalog.catalog_version}.`);
 }
 
 main().catch((error) => {

@@ -23,7 +23,13 @@ For optional company context from `apollo_organizations_enrich`, ask the separat
 
 ## 3. Confirm Private-Data Reveal
 
-Before setting `reveal_personal_emails: true` or displaying private email fields, preview the selected count and ask exactly:
+Before offering any email or phone reveal, call `apollo_users_api_profile` once with `include_waterfall_capability: true`. Reuse the returned team-level email and phone capability flags for the rest of the conversation.
+
+- When waterfall is enabled for the requested field, use the matching waterfall option by default and use the exact variable-cost confirmation required by `apollo_people_match`. Never quote a fixed waterfall cost.
+- When waterfall is not enabled, use the standard reveal path and its exact confirmation. If the user explicitly requested waterfall, use the tool's required disabled-capability message and run a standard reveal only if the user accepts that alternative.
+- Before any phone reveal or waterfall request, verify that `apollo_webhook_result_show` is available. If it is unavailable, do not start the request or spend credits; ask the user to reconnect Apollo.
+
+For a standard personal-email reveal, preview the selected count and ask exactly:
 
 ```text
 This will reveal private contact data for [N] selected people. Do you want me to reveal it now?
@@ -31,7 +37,7 @@ This will reveal private contact data for [N] selected people. Do you want me to
 
 Do not reveal those fields without an explicit answer to this separate question. The match still requires the exact 1-credit confirmation immediately before the call. A prior enrichment approval is not reveal approval.
 
-Request phone reveal only when the visible `apollo_people_match` schema supports it. Follow that tool's exact confirmation and asynchronous polling instructions, including the documented request-ID field and polling tool. Do not assume a top-level or nested ID, and do not invent a polling tool. If the complete reveal-and-poll contract is unavailable, report that phone reveal is unsupported. Do not claim that a phone number was returned until the documented polling flow succeeds.
+For a standard phone reveal, use the one combined enrichment-and-phone confirmation required by `apollo_people_match`; do not ask for enrichment and phone approval in separate turns. For any accepted asynchronous phone or waterfall request, poll `apollo_webhook_result_show` with the exact top-level request ID and the timing rules in the current tool description. Do not claim a phone number or waterfall result until polling succeeds.
 
 ## 4. Present the Result
 
@@ -42,7 +48,7 @@ Show only returned and approved fields: name, title, company, location, profile 
 If the user asks to save the lead, preview the exact fields. Use `apollo_contacts_create` only after asking:
 
 ```text
-This will write [N] Apollo contact records with duplicate prevention enabled. Do you want me to make that contact write now?
+This will create or update [N] Apollo contact records. Matching contacts may have the submitted fields overwritten, and that cannot be undone. Do you want me to make that contact write now?
 ```
 
-Do not treat enrichment, reveal, or sequencing intent as contact-write approval. Set `run_dedupe: true`, summarize the result after a confirmed write, and report the returned create, skip, duplicate, or error outcome without assuming an update occurred.
+Do not treat enrichment, reveal, or sequencing intent as contact-write approval. Submit only the confirmed fields, summarize the returned result after the write, and do not assume whether Apollo created or updated the record.

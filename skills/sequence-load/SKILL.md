@@ -13,38 +13,44 @@ Extract the targeting criteria, sequence name, and volume; default to 10 contact
 
 If a name has zero or multiple sequence matches, ask the user to select one. If multiple sending accounts exist, ask the user to select one. Show candidates without private emails or phones. Stop if a required capability is missing or if the visible schema rejects the request.
 
+Select at most 10 people for enrichment and enrollment in one run. If the user requests more, do not loop `apollo_people_bulk_match` across conversational batches. Explain that larger jobs require Apollo's persistent collection workflow and keep this skill to a reviewed 10-person batch.
+
 ## 2. Confirm Credit Use
 
-Use `apollo_users_api_profile` to show the current credit balance when available. Before `apollo_people_bulk_match`, preview selected candidates and replace the placeholder in this exact question:
+Use `apollo_users_api_profile` with `include_credit_usage: true` and `include_waterfall_capability: true` to obtain the current balance and the team-level email and phone waterfall flags in one call. Reuse those capability flags for the rest of the conversation. Before `apollo_people_bulk_match`, preview selected candidates and replace the placeholder in this exact question:
 
 ```text
-This will enrich [N] people and consume up to [N] credits (1 credit per match, no charge for unmatched). Do you want to proceed?
+Found [N] contacts. Enriching all will use up to [N] credits. You have [X] credits remaining. Do you want to proceed?
 ```
 
-Do not enrich until confirmed. If balance data is unavailable, say so. Credit approval does not approve reveal, saving, enrollment, activation, or sending.
+Do not enrich until confirmed. If balance data is unavailable, stop and ask the user to reconnect Apollo. Credit approval does not approve reveal, saving, enrollment, activation, or sending.
 
 ## 3. Confirm Private-Data Reveal
 
-Private contact data is not required merely to preview fit. Before requesting reveal options or displaying private fields, ask exactly:
+Private contact data is not required merely to preview fit. For a standard personal-email reveal, ask exactly:
 
 ```text
 This will reveal private contact data for [N] selected people. Do you want me to reveal it now?
 ```
 
-For personal-email reveal, do not reveal those fields until separately confirmed, then repeat the exact bulk-enrichment credit confirmation immediately before the call. Phone reveal instead requires one combined confirmation; do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, ask exactly:
+Use the capability flags before choosing a reveal path. When waterfall is enabled for the requested field, use the matching waterfall option by default and the exact search-then-enrich variable-cost confirmation from `apollo_people_bulk_match`, including the returned balance; never quote a fixed waterfall cost. When it is not enabled, use the standard reveal path. If the user explicitly requested waterfall, use the tool's required disabled-capability message and use a standard reveal only if the user accepts.
+
+Before any phone reveal or waterfall request, verify that `apollo_webhook_result_show` is available. If it is unavailable, do not start the request or spend credits; ask the user to reconnect Apollo.
+
+For a standard personal-email reveal, do not reveal those fields until separately confirmed, then repeat the exact bulk-enrichment credit confirmation immediately before the call. A standard phone reveal instead requires one combined confirmation; do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, ask exactly:
 
 ```text
-This will enrich [N] people and use up to [N] credits (1 credit per match, no charge for unmatched), plus additional credits for each phone number successfully revealed (no charge if a number isn't found). Do you want to proceed?
+Found [N] contacts. Enriching all will use up to [N] credits, plus additional credits for each phone number successfully revealed (no charge if a number isn't found). You have [X] credits remaining. Do you want to proceed?
 ```
 
-Request phone reveal only when the visible `apollo_people_bulk_match` schema supports it. Follow that tool's exact confirmation and asynchronous polling instructions, including the documented request-ID field and polling tool. Do not assume a top-level or nested ID, and do not invent a polling tool. If the complete reveal-and-poll contract is unavailable, report that phone reveal is unsupported. Do not claim that phone numbers were returned until the documented polling flow succeeds.
+For any accepted asynchronous phone or waterfall request, poll `apollo_webhook_result_show` with the exact top-level request ID and the timing rules in the current tool description. Do not claim a phone number or waterfall result until polling succeeds.
 
 ## 4. Confirm Contact Writes
 
-Preview the contacts and fields that `apollo_contacts_bulk_create` would create, warn that the bulk tool may create a new record for every submitted item, and ask:
+Preview the contacts and fields that `apollo_contacts_bulk_create` would create or update. Explain that Apollo automatically updates matching contacts, overwriting submitted fields irreversibly. Ask:
 
 ```text
-This will create [N] Apollo contact records. Duplicate handling depends on the active Apollo tool contract. Do you want me to make that contact write now?
+This will create or update [N] Apollo contact records. Matching contacts may have the submitted fields overwritten, and that cannot be undone. Do you want me to make that contact write now?
 ```
 
 Do not create contacts until this write is confirmed. Review the input for duplicates before submitting one bulk request, then report the returned outcomes before enrollment.
@@ -77,7 +83,9 @@ Use only a visible capability that supports the requested action. Never infer an
 
 ## 7. Other Membership Changes
 
-For a remove, stop, pause, or finish request through `apollo_emailer_campaigns_remove_or_stop_contact_ids`, preview the exact sequence, contact identifiers, count, and mode. Ask for separate confirmation that the live membership or sending state will change. Enrollment approval does not authorize later membership changes.
+Use `apollo_emailer_campaigns_remove_or_stop_contact_ids` only for `remove` or `stop`. `remove` permanently removes the contact from the sequence; `stop` halts future steps while preserving stop context. Do not map a pause or finish request to this tool; report it as unsupported unless another visible tool explicitly provides that mode.
+
+Resolve unknown contact IDs with `apollo_contacts_search` and unknown sequence IDs with `apollo_emailer_campaigns_search` in the current session. For `stop`, ask the user for the `stop_reason`; never invent it. Preview the exact contacts, sequences, count, mode, and stop reason when applicable, then ask for separate confirmation that the live membership or sending state will change. Enrollment approval does not authorize later membership changes.
 
 ## 8. Summarize
 
