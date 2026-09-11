@@ -267,6 +267,8 @@ If you installed the Claude Code / Cowork plugin, the same workflows are availab
 - `/apollo:enrich-lead https://www.linkedin.com/in/example`
 - `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
 - `/apollo:analytics Show me team call connect rate this quarter by rep`
+- `/apollo:cold-email-launch we sell an invoicing tool to freelance designers`
+- `/apollo:pixel-web-intent track acme.com`
 
 > **Review before you act.** For consequential actions — enrichment (credit-consuming) and adding contacts to a sequence (potentially outbound) — review the exact targets and parameters before confirming the operation.
 
@@ -286,6 +288,8 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 | `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers. |
 | `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment. |
 | `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data. |
+| `/apollo:cold-email-launch` | Read the app you are building, judge outbound fit, derive an ICP, prospect, and prepare a reviewed **inactive** first sequence behind separate approval gates. |
+| `/apollo:pixel-web-intent` | Install the Apollo website visitor pixel, then turn tracked traffic into identified visiting people, with named visiting companies as the fallback. |
 
 ### Underlying Apollo tools referenced by the skills
 
