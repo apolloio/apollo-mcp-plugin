@@ -1,17 +1,28 @@
 ---
 name: pixel-web-intent
-description: Use when a Replit builder wants to install the Apollo website visitor pixel and turn anonymous traffic into visitors their outbound can act on; prefer identified visiting people when the current Apollo client exposes contact-level Website Visitor search, fall back to named visiting companies and accounts otherwise, and delegate setup to inbound-website-visitors when it is installed.
+description: "Install the Apollo website visitor pixel and turn anonymous traffic into people you can act on. Identifies visiting contacts when the Apollo client supports it, falls back to named visiting companies, and hands off to outbound."
+user-invocable: true
+argument-hint: [optional: the domain to track]
 ---
 
 # Pixel & Web Intent
 
-> This skill is designed to run inside a Replit workspace with Replit Agent — it reads your app's codebase and project context directly. Import it into Replit rather than running it elsewhere.
+Take an untracked app to a reviewed visitor list: identified visiting people when the current Apollo client exposes contact-level Website Visitor search — saved contacts first, then net-new people — with named visiting companies and accounts as the company-level fallback. The user can name the domain to track via "$ARGUMENTS"; when that is empty, infer it from the project's deployment configuration.
 
-Take a Replit builder from an untracked app to a reviewed visitor list: identified visiting people when the current Apollo client exposes contact-level Website Visitor search — saved contacts first, then net-new people — with named visiting companies and accounts as the company-level fallback. Treat every Apollo capability as conditional: rely only on capabilities discovered in the current Apollo client, and never invent a tool name, tracker state, script, visitor, person, company, intent level, credit cost, or Apollo ID.
+Treat every Apollo capability as conditional: rely only on capabilities discovered in the current Apollo client, and never invent a tool name, tracker state, script, visitor, person, company, intent level, credit cost, or Apollo ID.
 
-Present identified people only when they were returned by a discovered contact-level Website Visitor search capability — a saved-contact search or a people search supporting Website Visitor filters; never infer that an individual person visited from company-level traffic, employee rosters, or tracker settings. When only company-level data is available, say so plainly rather than implying person-level discovery succeeded. Website Visitor intent here is a first-party signal from the builder's own tracked site: first-party Website Visitors are not Apollo's third-party Buying Intent topic product, and never claim a Buying Intent topic filter was applied through this workflow.
+## Examples
 
-## Inspect the Replit app
+- `/apollo:pixel-web-intent`
+- `/apollo:pixel-web-intent track acme.com`
+- `/apollo:pixel-web-intent who visited my pricing page this week?`
+- `/apollo:pixel-web-intent install the pixel and show me the companies that visited`
+
+## Ground rules for what counts as a visit
+
+Present identified people only when they were returned by a discovered contact-level Website Visitor search capability — a saved-contact search or a people search supporting Website Visitor filters; never infer that an individual person visited from company-level traffic, employee rosters, or tracker settings. When only company-level data is available, say so plainly rather than implying person-level discovery succeeded. Website Visitor intent here is a first-party signal from the user's own tracked site: first-party Website Visitors are not Apollo's third-party Buying Intent topic product, and never claim a Buying Intent topic filter was applied through this workflow.
+
+## Inspect the app
 
 Determine the deployed domain to track and the correct browser-side placement before touching Apollo: read the project's framework, entry HTML or shared layout, and deployment configuration. Identify the exact file where a head-level script belongs and whether the site is deployed at a stable domain. State inferences as brief, correctable assumptions.
 
@@ -21,11 +32,11 @@ Discover whether the current Apollo client exposes tracker lookup, official inst
 
 ## Install and configure the pixel
 
-Prefer delegating installation and configuration to the `inbound-website-visitors` skill when it is discovered in the current Agent environment; do not require it. When it is absent, run the same safe workflow directly through discovered Apollo capabilities and keep every gate below.
+Prefer delegating installation and configuration to the `inbound-website-visitors` skill when it is available in the current environment; do not require it. When it is absent, run the same safe workflow directly through discovered Apollo capabilities and keep every gate below.
 
 1. Confirmation gate: tracker lookup. Explain that lookup may create an empty team tracker when none exists, then obtain explicit user confirmation before calling it. Read only the setup fields needed: tracker existence, configured domains, limits, status, and required IDs.
 2. Retrieve only the canonical install script through a discovered official capability, including any placement rules it returns. If that capability is unavailable, ask the user to obtain the official script in Apollo; do not hand-build or modify the snippet.
-3. Confirmation gate: local edit. Show the exact Replit project file and proposed script placement, then obtain explicit user confirmation before editing local files. A local edit does not authorize an Apollo settings write.
+3. Confirmation gate: local edit. Show the exact project file and proposed script placement, then obtain explicit user confirmation before editing local files. A local edit does not authorize an Apollo settings write.
 4. Confirmation gate: tracker settings write. State the exact tracked domain change, any contact-level tracking change, and any optional first-party intent paths with their labels and levels (for example a pricing page as high intent), then obtain a separate explicit user confirmation immediately before the write. Use IDs returned by confirmed lookup; never guess them. Whether the workspace can enable or use contact-level tracking is decided by the discovered Apollo capability and entitlement responses, not by an assumed subscription requirement; surface any returned entitlement or permission blocker honestly.
 5. Verify placement by inspecting the edited file and, when possible, the served page. Do not manufacture traffic, synthetic visits, or test events, and do not claim visitors will appear on any specific timeline.
 
@@ -51,7 +62,7 @@ Company-level results mean someone at that company visited, never that a particu
 
 Zero visiting people or companies, a missing website visitors entitlement, exhausted visitor credits, or an uninstalled pixel must produce an honest empty state or stated blocker; never fabricate visitors, visit counts, or intent levels.
 
-Optional per-company visit detail (visit counts, unique visitors, top visited paths) is allowed only when a valid `organization_id` from returned results or a discovered enrichment capability is available together with a confirmed tracked domain, and the tracked domain is always the builder's own site, never the visiting company's domain.
+Optional per-company visit detail (visit counts, unique visitors, top visited paths) is allowed only when a valid `organization_id` from returned results or a discovered enrichment capability is available together with a confirmed tracked domain, and the tracked domain is always the user's own site, never the visiting company's domain.
 
 ## Hand off to outbound
 
@@ -59,4 +70,4 @@ For identified people, hand off the exact returned contact or person IDs with th
 
 For company-only results, present the named visiting accounts with the visit and intent context outbound can act on — recency window, first-party intent level, visited pages, and whether each is a net-new organization or an existing saved account — and hand off their organization IDs and domains.
 
-For the next outbound step, prefer a discovered public `prospect` skill (and the discovered sequence-safety skills). If those skills are absent, do not invent them and do not take on prospecting, contact creation, enrollment, or sequence launch inside this skill; finish with a clear handoff that lists the person IDs or organization IDs and domains ready for that follow-on workflow.
+For the next outbound step, prefer the `/apollo:prospect` skill (and the sequence-safety skills) when available. If those skills are absent, do not invent them and do not take on prospecting, contact creation, enrollment, or sequence launch inside this skill; finish with a clear handoff that lists the person IDs or organization IDs and domains ready for that follow-on workflow.
