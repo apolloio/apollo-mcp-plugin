@@ -32,7 +32,7 @@ Discover whether the current Apollo client exposes tracker lookup, official inst
 
 ## Install and configure the pixel
 
-Prefer delegating installation and configuration to the `inbound-website-visitors` skill when it is available in the current environment; do not require it. When it is absent, run the same safe workflow directly through discovered Apollo capabilities and keep every gate below.
+Prefer delegating installation and configuration to a dedicated website-visitors setup skill when one is available in the current environment; do not require it. When none is present, run the same safe workflow directly through discovered Apollo capabilities and keep every gate below.
 
 1. Confirmation gate: tracker lookup. Explain that lookup may create an empty team tracker when none exists, then obtain explicit user confirmation before calling it. Read only the setup fields needed: tracker existence, configured domains, limits, status, and required IDs.
 2. Retrieve only the canonical install script through a discovered official capability, including any placement rules it returns. If that capability is unavailable, ask the user to obtain the official script in Apollo; do not hand-build or modify the snippet.
