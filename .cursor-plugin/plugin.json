@@ -10,5 +10,6 @@
   "repository": "https://github.com/apolloio/apollo-mcp-plugin",
   "license": "MIT",
   "keywords": ["apollo", "sales", "prospecting", "icp", "enrichment", "sequences", "analytics", "mcp"],
+  "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }
