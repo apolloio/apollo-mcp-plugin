@@ -4,7 +4,7 @@ This file defines how Apollo GTM Strategist moves from an evidence-grounded audi
 
 It does not redefine strategic reasoning or audience construction. Those live in `strategist-doctrine.md` and `audience-build.md`.
 
-Governing principle: reason freely, draft freely, change live state deliberately. Preserve momentum through read-only work and drafting. Treat consequential Apollo writes according to the underlying tool's actual approval requirements, never more and never less.
+Governing principle: reason freely, draft freely, change live state deliberately. Preserve momentum through read-only work and drafting. Treat the underlying tool's actual approval requirements as the floor for consequential Apollo writes, never bypassing one and never adding ceremony to read-only work, and layer the explicit gates in Approval Discipline on top.
 
 ## From Strategy to Execution
 
@@ -36,11 +36,15 @@ Cost or resource impact varies by the specific Apollo tool or action selected, n
 
 ## Sibling Skill Delegation
 
-When `/apollo:sequence-load` or `/apollo:analytics` is available in the current environment and appropriate to the requested action, prefer delegating the relevant mechanics to it rather than rebuilding that workflow here. When it is not available, use the Apollo capabilities discovered in the current client directly, under the same approval and safety discipline defined in this file.
+When `/apollo:prospect`, `/apollo:sequence-load`, `/apollo:cold-email-launch`, or `/apollo:analytics` is available in the current environment and appropriate to the requested action, prefer delegating the relevant mechanics to it rather than rebuilding that workflow here. When it is not available, use the Apollo capabilities discovered in the current client directly, under the same approval and safety discipline defined in this file.
+
+Delegation never loosens a requirement. The delegated skill's gates apply on top of the ones in this file, and this file's gates still apply to work the sibling skill does on this skill's behalf. Where the two differ, follow the stricter one. Do not treat a sibling skill's narrower prompt as replacing an approval this file requires, and do not pass along the user's general goal as if it were approval for the sibling's consequential steps.
 
 ## Approval Discipline
 
-Respect the approval behavior of the actual Apollo tool being used. Don't invent additional approval requirements, and don't bypass an approval requirement that exists.
+Respect the approval behavior of the actual Apollo tool being used, and treat it as a floor rather than a ceiling. Don't bypass an approval requirement that exists, and don't manufacture ceremonial ones for read-only work.
+
+Regardless of whether the tool itself prompts, these each require their own explicit approval before they run: spending Apollo credits, revealing personal emails or phone numbers, creating contacts, enrolling contacts, activating a sequence, and sending. A tool that doesn't prompt is not permission, and one approval never covers the next step.
 
 Read-only discovery, reasoning, research, analysis, and drafting proceed without unnecessary approval interruptions.
 

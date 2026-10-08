@@ -9,6 +9,8 @@ argument-hint: [targeting criteria + sequence name]
 
 Find, enrich, and load contacts into an outreach sequence — end to end. The user provides targeting criteria and a sequence name via "$ARGUMENTS".
 
+This skill owns enrollment of reviewed contacts into a sequence. ICP-to-leads discovery belongs to `/apollo:prospect`, turning the app the user is building into a first outbound motion belongs to `/apollo:cold-email-launch`, and broad GTM planning belongs to `/apollo:gtm-strategist`. When one of those skills delegates here, its safety requirements come with it: follow the stricter of the two and never relax a gate because the caller already stated the goal.
+
 ## Examples
 
 - `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
@@ -60,17 +62,21 @@ Present the candidates in a preview table:
 | # | Name | Title | Company | Location |
 |---|---|---|---|---|
 
-Ask: **"Add these [N] contacts to [Sequence Name]? This will consume [N] Apollo credits for enrichment."**
+**Confirmation gate: credit spend.** Confirm only the enrichment spend here: **"Enrich these [N] people? This will consume [N] Apollo credits."**
 
-Wait for confirmation before proceeding.
+Wait for explicit confirmation. This approval covers enrichment only. It does not authorize revealing personal contact data, creating Apollo contacts, or enrolling anyone — those are separate gates in Steps 5 and 6.
 
 ## Step 5 — Enrich and Create Contacts
+
+**Confirmation gate: private-data reveal.** Ask separately before revealing personal emails and phone numbers. Set `reveal_personal_emails` to `true` only once that is granted; if it is declined, enrich without it and continue with work data only.
+
+**Confirmation gate: contact write.** Creating Apollo contacts changes the user's workspace. Show exactly which enriched people will be written and confirm that before any create call. The enrichment approval from Step 4 does not cover it.
 
 For each approved lead:
 
 1. **Enrich** — Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` (batch up to 10 per call) with:
    - `first_name`, `last_name`, `domain` for each person
-   - `reveal_personal_emails` set to `true`
+   - `reveal_personal_emails` set to `true` only when the reveal gate was approved
 
 2. **Create contacts** — For each enriched person, use `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with:
    - `first_name`, `last_name`, `email`, `title`, `organization_name`
@@ -80,6 +86,10 @@ For each approved lead:
 Collect all created contact IDs.
 
 ## Step 6 — Add to Sequence
+
+**Confirmation gate: enrollment.** Confirm the exact sequence, the exact contacts, and the sender mailbox before enrolling. Contact-write approval does not imply enrollment approval.
+
+**Confirmation gate: sending.** Check the sequence status first. If the sequence is active, enrolling starts live outreach — say that plainly and take a separate explicit confirmation to send, or enroll the contacts paused where the client supports it. Never infer send or activation approval from a request like "load these into the sequence."
 
 Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_add_contact_ids` with:
 - `id`: the sequence ID
@@ -112,9 +122,18 @@ Show a summary:
 
 ## Step 8 — Offer Next Actions
 
+Offering an action is not approval to take it. Picking one from this list starts that action's own gates again; nothing approved earlier in this run carries into it.
+
 Ask the user:
 
-1. **Load more** — Find and add another batch of leads
+1. **Load more** — Find and add another batch of leads, re-running the credit, reveal, contact-write, and enrollment gates for that batch
 2. **Review sequence** — Show sequence details and all enrolled contacts
 3. **Remove a contact** — Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_remove_or_stop_contact_ids` to remove specific contacts
 4. **Pause a contact** — Re-add with `status: "paused"` and an `auto_unpause_at` date
+
+## Safety rules
+
+- Never fabricate results or report actions that did not run.
+- Never spend Apollo credits, reveal private contact data, write contacts, enroll contacts, activate, or send without the separate explicit approval for that specific step; one approval never covers the next.
+- Read-only sequence lookup, email-account lookup, and candidate search need no approval; do not manufacture gates for them.
+- Prefer capability discovery and current Apollo client metadata over hard-coded assumptions; if a needed capability is missing, state the blocker and continue only with planning-level guidance.
