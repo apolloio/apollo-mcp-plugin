@@ -79,6 +79,24 @@ For each approved lead:
 
 Collect all created contact IDs.
 
+## Step 5b: Check Cold-Email Rules (if Precleared is connected)
+
+Whether a cold email is legal depends on the contact, not just the sequence. In the UK a sole trader, or anyone at a personal address such as Gmail, needs consent first; Germany needs consent even business to business. If the Precleared connector is available (a `contact_check` tool, server `https://precleared.dev/mcp`), check each created contact before enrolling. If it isn't available, go straight to Step 6.
+
+For each contact with an email, call `contact_check` with:
+- `recipient_email`: the enriched email
+- `recipient_name`: first and last name
+- `company_name`: the organization name
+- `sender_country`: where the user's business is based (`GB`, `US` or `AE`; ask once if you don't know)
+- `address_source`: `"unknown"`, unless the user has said how the addresses were obtained
+
+Then:
+- `ok_to_email`: keep the contact ID for Step 6.
+- `consent_needed`, `blocked` or `unknown`: leave the contact out of `contact_ids`, and list it in Step 7 with the verdict and `next_step`.
+- If a check can't run (for example the day's free checks are used up), say so and ask before enrolling unchecked contacts.
+
+Keep each `receipt.id`. Every email in the sequence must meet the `footer_text` requirement (usually who you are, a postal address and a way to opt out).
+
 ## Step 6 — Add to Sequence
 
 Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_add_contact_ids` with:
@@ -100,12 +118,18 @@ Show a summary:
 |---|---|
 | Sequence | [Name] |
 | Contacts added | [count] |
+| Held back by the Step 5b check | [count, if Precleared was used] |
 | Sending from | [email address] |
 | Credits used | [count] |
 
 **Contacts enrolled:**
 
 | Name | Title | Company | Email |
+|---|---|---|---|
+
+**Not enrolled (if Step 5b ran):**
+
+| Name | Email | Verdict | Next step |
 |---|---|---|---|
 
 ---
