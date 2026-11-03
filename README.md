@@ -267,6 +267,7 @@ If you installed the Claude Code / Cowork plugin, the same workflows are availab
 - `/apollo:enrich-lead https://www.linkedin.com/in/example`
 - `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
 - `/apollo:analytics Show me team call connect rate this quarter by rep`
+- `/apollo:icp-job-changes ./job_changes.csv rubric=./icp-rubric.md`
 
 > **Review before you act.** For consequential actions — enrichment (credit-consuming) and adding contacts to a sequence (potentially outbound) — review the exact targets and parameters before confirming the operation.
 
@@ -286,6 +287,7 @@ High-value skills that chain multiple Apollo tools into complete workflows:
 | `/apollo:prospect` | Describe your ICP in plain English and get a ranked table of enriched decision-makers. |
 | `/apollo:sequence-load` | Find leads, enrich them, dedupe, and bulk-add them to an Apollo sequence with a preview before enrollment. |
 | `/apollo:analytics` | Ask any sales performance question and get formatted tables from real Apollo analytics data. |
+| `/apollo:icp-job-changes` | Score job changes against your own ICP rubric, review a weekly approval sheet, and create only the approved good-fit contacts. |
 
 ### Underlying Apollo tools referenced by the skills
 
@@ -389,7 +391,8 @@ Repository layout:
 | `.claude-plugin/` | Claude Code / Cowork plugin and marketplace manifests. |
 | `.cursor-plugin/` | Cursor plugin manifest. |
 | `glama.json` | Glama MCP directory metadata. |
-| `skills/` | Workflow skills: `prospect`, `enrich-lead`, `sequence-load`, `analytics`. |
+| `skills/` | Workflow skills: `prospect`, `enrich-lead`, `sequence-load`, `analytics`, `gtm-strategist`, `icp-job-changes`. |
+| `docs/proposals/` | Design notes for proposed skills. |
 | `.github/workflows/publish-mcp.yml` | CI that publishes `server.json` to the MCP Registry. |
 
 ### Validating `server.json`
