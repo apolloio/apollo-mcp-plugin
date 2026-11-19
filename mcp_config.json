@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "apollo": {
+      "serverUrl": "https://mcp.apollo.io/mcp"
+    }
+  }
+}
