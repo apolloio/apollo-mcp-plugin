@@ -1,120 +1,92 @@
 ---
 name: sequence-load
-description: "Find leads matching criteria and bulk-add them to an Apollo outreach sequence. Handles enrichment, contact creation, deduplication, and enrollment in one flow."
-user-invocable: true
-argument-hint: [targeting criteria + sequence name]
+description: "Prepare and load Apollo contacts into a sequence with staged approvals. Use when finding sequence candidates, selecting a sending account, enriching or saving contacts, enrolling contacts, activating a sequence, or sending outreach."
 ---
 
 # Sequence Load
 
-Find, enrich, and load contacts into an outreach sequence — end to end. The user provides targeting criteria and a sequence name via "$ARGUMENTS".
+Prepare sequence membership in stages. Search and preview first, then obtain distinct approvals for credits, private-data reveal, contact writes, enrollment, activation, and direct sending. Approval at one stage never carries into another.
 
-## Examples
+## 1. Resolve the Plan Read-Only
 
-- `/apollo:sequence-load add 20 VP Sales at SaaS companies to my "Q1 Outbound" sequence`
-- `/apollo:sequence-load SDR managers at fintech startups → Cold Outreach v2`
-- `/apollo:sequence-load list sequences` (shows all available sequences)
-- `/apollo:sequence-load directors of engineering, 500+ employees, US → Demo Follow-up`
-- `/apollo:sequence-load reload 15 more leads into "Enterprise Pipeline"`
+Extract the targeting criteria, sequence name, and volume; default to 10 contacts. Use `apollo_emailer_campaigns_search` to resolve the sequence, `apollo_email_accounts_index` to list sending accounts, and `apollo_mixed_people_api_search` to preview candidates.
 
-## Step 1 — Parse Input
+If a name has zero or multiple sequence matches, ask the user to select one. If multiple sending accounts exist, ask the user to select one. Show candidates without private emails or phones. Stop if a required capability is missing or if the visible schema rejects the request.
 
-From "$ARGUMENTS", extract:
+Select at most 10 people for enrichment and enrollment in one run. If the user requests more, do not loop `apollo_people_bulk_match` across conversational batches. Explain that larger jobs require Apollo's persistent collection workflow and keep this skill to a reviewed 10-person batch.
 
-**Targeting criteria:**
-- Job titles → `person_titles`
-- Seniority levels → `person_seniorities`
-- Industry keywords → `q_organization_keyword_tags`
-- Company size → `organization_num_employees_ranges`
-- Locations → `person_locations` or `organization_locations`
+## 2. Confirm Credit Use
 
-**Sequence info:**
-- Sequence name (text after "to", "into", or "→")
-- Volume — how many contacts to add (default: 10 if not specified)
+Use `apollo_users_api_profile` with `include_credit_usage: true` and `include_waterfall_capability: true` to obtain the current balance and the team-level email and phone waterfall flags in one call. Reuse those capability flags for the rest of the conversation. Before `apollo_people_bulk_match`, preview selected candidates and replace the placeholder in this exact question:
 
-If the user just says "list sequences", skip to Step 2 and show all available sequences.
+```text
+Found [N] contacts. Enriching all will use up to [N] credits. You have [X] credits remaining. Do you want to proceed?
+```
 
-## Step 2 — Find the Sequence
+Do not enrich until confirmed. If balance data is unavailable, stop and ask the user to reconnect Apollo. Credit approval does not approve reveal, saving, enrollment, activation, or sending.
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_search` to find the target sequence:
-- Set `q_name` to the sequence name from input
+## 3. Confirm Private-Data Reveal
 
-If no match or multiple matches:
-- Show all available sequences in a table: | Name | ID | Status |
-- Ask the user to pick one
+Private contact data is not required merely to preview fit. For a standard personal-email reveal, ask exactly:
 
-## Step 3 — Get Email Account
+```text
+This will reveal private contact data for [N] selected people. Do you want me to reveal it now?
+```
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_email_accounts_index` to list linked email accounts.
+Use the capability flags before choosing a reveal path. When waterfall is enabled for the requested field, use the matching waterfall option by default and the exact search-then-enrich variable-cost confirmation from `apollo_people_bulk_match`, including the returned balance; never quote a fixed waterfall cost. When it is not enabled, use the standard reveal path. If the user explicitly requested waterfall, use the tool's required disabled-capability message and use a standard reveal only if the user accepts.
 
-- If one account → use automatically
-- If multiple → show them and ask which to send from
+Before any phone reveal or waterfall request, verify that `apollo_webhook_result_show` is available. If it is unavailable, do not start the request or spend credits; ask the user to reconnect Apollo.
 
-## Step 4 — Find Matching People
+For a standard personal-email reveal, do not reveal those fields until separately confirmed, then repeat the exact bulk-enrichment credit confirmation immediately before the call. A standard phone reveal instead requires one combined confirmation; do not ask for enrichment and phone reveal in two separate turns. When `reveal_phone_number: true`, ask exactly:
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_mixed_people_api_search` with the targeting criteria.
-- Set `per_page` to the requested volume (or 10 by default)
+```text
+Found [N] contacts. Enriching all will use up to [N] credits, plus additional credits for each phone number successfully revealed (no charge if a number isn't found). You have [X] credits remaining. Do you want to proceed?
+```
 
-Present the candidates in a preview table:
+For any accepted asynchronous phone or waterfall request, poll `apollo_webhook_result_show` with the exact top-level request ID and the timing rules in the current tool description. Do not claim a phone number or waterfall result until polling succeeds.
 
-| # | Name | Title | Company | Location |
-|---|---|---|---|---|
+## 4. Confirm Contact Writes
 
-Ask: **"Add these [N] contacts to [Sequence Name]? This will consume [N] Apollo credits for enrichment."**
+Preview the contacts and fields that `apollo_contacts_bulk_create` would create or update. Explain that Apollo automatically updates matching contacts, overwriting submitted fields irreversibly. Ask:
 
-Wait for confirmation before proceeding.
+```text
+This will create or update [N] Apollo contact records. Matching contacts may have the submitted fields overwritten, and that cannot be undone. Do you want me to make that contact write now?
+```
 
-## Step 5 — Enrich and Create Contacts
+Do not create contacts until this write is confirmed. Review the input for duplicates before submitting one bulk request, then report the returned outcomes before enrollment.
 
-For each approved lead:
+## 5. Confirm Sequence Enrollment
 
-1. **Enrich** — Use `mcp__claude_ai_Apollo_MCP__apollo_people_bulk_match` (batch up to 10 per call) with:
-   - `first_name`, `last_name`, `domain` for each person
-   - `reveal_personal_emails` set to `true`
+After contacts exist, preview the sequence, contact count, selected sending account, and whether the sequence is active or may send automatically. Default the enrollment status and tool input to `paused`. Before `apollo_emailer_campaigns_add_contact_ids`, replace every placeholder and ask exactly:
 
-2. **Create contacts** — For each enriched person, use `mcp__claude_ai_Apollo_MCP__apollo_contacts_create` with:
-   - `first_name`, `last_name`, `email`, `title`, `organization_name`
-   - `direct_phone` or `mobile_phone` if available
-   - `run_dedupe` set to `true`
+```text
+This will enroll [N] contacts in [Sequence Name] using [Sending Account] with status paused. Do you want me to enroll them now?
+```
 
-Collect all created contact IDs.
+Do not enroll until confirmed. Enrollment approval does not approve sequence activation or direct sending. Do not use an active status until the separate activation confirmation below.
 
-## Step 6 — Add to Sequence
+## 6. Confirm Activation and Sending Separately
 
-Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_add_contact_ids` with:
-- `id`: the sequence ID
-- `emailer_campaign_id`: same sequence ID
-- `contact_ids`: array of created contact IDs
-- `send_email_from_email_account_id`: the chosen email account ID
-- `sequence_active_in_other_campaigns`: `false` (safe default)
+If the user asks to approve or activate a sequence, preview its current state and configured sending behavior. Ask exactly:
 
-## Step 7 — Confirm Enrollment
+```text
+This will activate [Sequence Name] and may begin configured outbound sending. Do you want me to activate it now?
+```
 
-Show a summary:
+If the user asks for an immediate direct send, show the recipient, subject, body, and sending account. Ask a new question exactly:
 
----
+```text
+This will send a real message to [Recipient] from [Sending Account]. Do you want me to send it now?
+```
 
-**Sequence loaded successfully**
+Use only a visible capability that supports the requested action. Never infer an activation or send tool, recipient, or sending account.
 
-| Field | Value |
-|---|---|
-| Sequence | [Name] |
-| Contacts added | [count] |
-| Sending from | [email address] |
-| Credits used | [count] |
+## 7. Other Membership Changes
 
-**Contacts enrolled:**
+Use `apollo_emailer_campaigns_remove_or_stop_contact_ids` only for `remove` or `stop`. `remove` permanently removes the contact from the sequence; `stop` halts future steps while preserving stop context. Do not map a pause or finish request to this tool; report it as unsupported unless another visible tool explicitly provides that mode.
 
-| Name | Title | Company | Email |
-|---|---|---|---|
+Resolve unknown contact IDs with `apollo_contacts_search` and unknown sequence IDs with `apollo_emailer_campaigns_search` in the current session. For `stop`, ask the user for the `stop_reason`; never invent it. Preview the exact contacts, sequences, count, mode, and stop reason when applicable, then ask for separate confirmation that the live membership or sending state will change. Enrollment approval does not authorize later membership changes.
 
----
+## 8. Summarize
 
-## Step 8 — Offer Next Actions
-
-Ask the user:
-
-1. **Load more** — Find and add another batch of leads
-2. **Review sequence** — Show sequence details and all enrolled contacts
-3. **Remove a contact** — Use `mcp__claude_ai_Apollo_MCP__apollo_emailer_campaigns_remove_or_stop_contact_ids` to remove specific contacts
-4. **Pause a contact** — Re-add with `status: "paused"` and an `auto_unpause_at` date
+Report the resolved sequence, sending account, candidates searched, contacts enriched, details revealed, contacts created or updated, contacts enrolled, credits used or expected, activation or send state, skipped stages, and errors. Never report an action as complete unless its tool call succeeded.
