@@ -8,7 +8,7 @@
 
 **Provider:** Official, first-party server built and maintained by [Apollo.io](https://www.apollo.io/).
 
-Bring Apollo.io prospecting, enrichment, and outreach directly into your favorite MCP-compatible AI application — GitHub Copilot, Visual Studio Code, Cursor, Claude Code, Claude Desktop, and Claude Cowork.
+Bring Apollo.io prospecting, enrichment, and outreach directly into your favorite MCP-compatible AI application — GitHub Copilot, Visual Studio Code, Cursor, Claude Code, Claude Desktop, Claude Cowork, Gemini CLI, and Antigravity CLI.
 
 - **Apollo.io:** <https://www.apollo.io/>
 - **Model Context Protocol:** <https://modelcontextprotocol.io/>
@@ -25,6 +25,8 @@ Bring Apollo.io prospecting, enrichment, and outreach directly into your favorit
 - [Install in Cursor](#install-in-cursor)
 - [Install in Claude Code](#install-in-claude-code)
 - [Install in Claude Desktop or Claude Cowork](#install-in-claude-desktop-or-claude-cowork)
+- [Install in Gemini CLI](#install-in-gemini-cli)
+- [Install in Antigravity CLI](#install-in-antigravity-cli)
 - [Generic MCP Client Configuration](#generic-mcp-client-configuration)
 - [Authentication and Authorization](#authentication-and-authorization)
 - [Usage Examples](#usage-examples)
@@ -86,6 +88,8 @@ The following capabilities are confirmed by the server tools and skills in this 
   - Cursor
   - Claude Code
   - Claude Desktop / Claude Cowork
+  - Gemini CLI
+  - Antigravity CLI
   - Other MCP clients (see [Generic MCP Client Configuration](#generic-mcp-client-configuration))
 - **No local runtime required.** The server is remote and hosted by Apollo.io — you do **not** need Node.js, Docker, or a local installation to use it. (The optional Claude Code / Cowork plugin installs workflow skills locally through your client's plugin system, but the MCP server itself remains remote.)
 
@@ -209,6 +213,42 @@ Add the Apollo connector from your Claude settings, then authenticate:
 4. Confirm Apollo tools are available in a new chat.
 
 > Exact menu labels and navigation vary by Claude Desktop version. See Anthropic's documentation for the current steps to add a remote MCP connector.
+
+---
+
+## Install in Gemini CLI
+
+Install this repository as a Gemini CLI extension:
+
+```bash
+gemini extensions install https://github.com/apolloio/apollo-mcp-plugin
+```
+
+Then:
+
+1. Start Gemini CLI and run `/mcp auth apollo`.
+2. Complete Apollo.io authentication in the browser window that opens, and approve the requested access.
+3. Run `/mcp` to confirm the `apollo` server is connected and its tools are listed.
+
+The extension is defined by `gemini-extension.json` and connects to the remote endpoint `https://mcp.apollo.io/mcp`, so no local package needs to run.
+
+---
+
+## Install in Antigravity CLI
+
+Install this repository as an Antigravity plugin:
+
+```bash
+agy plugin install https://github.com/apolloio/apollo-mcp-plugin
+```
+
+Then:
+
+1. Start Antigravity CLI and run `/plugin`.
+2. Expand **apollo** under **Installed** and choose **Sign in**.
+3. Complete Apollo.io authentication in the browser window that opens, and approve the requested access.
+
+The plugin is defined by `.antigravity-plugin/plugin.json` and `mcp_config.json`, which point at the same remote endpoint.
 
 ---
 
@@ -388,6 +428,8 @@ Repository layout:
 | `server.json` | Official MCP Registry metadata (name, version, transport, endpoint). |
 | `.claude-plugin/` | Claude Code / Cowork plugin and marketplace manifests. |
 | `.cursor-plugin/` | Cursor plugin manifest. |
+| `gemini-extension.json` | Gemini CLI extension manifest. |
+| `.antigravity-plugin/`, `mcp_config.json` | Antigravity plugin manifest and its remote MCP server definition. |
 | `glama.json` | Glama MCP directory metadata. |
 | `skills/` | Workflow skills: `prospect`, `enrich-lead`, `sequence-load`, `analytics`. |
 | `.github/workflows/publish-mcp.yml` | CI that publishes `server.json` to the MCP Registry. |
@@ -402,13 +444,13 @@ There is no standalone `validate` command. To check `server.json` locally before
 mcp-publisher publish --dry-run
 ```
 
-Contributions are welcome via pull requests. Please keep version metadata consistent across `server.json`, `.claude-plugin/plugin.json`, and `.cursor-plugin/plugin.json`.
+Contributions are welcome via pull requests. Please keep version metadata consistent across `server.json`, `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `gemini-extension.json`, and `.antigravity-plugin/plugin.json`.
 
 ---
 
 ## Versioning and Releases
 
-- The server version is declared in **`server.json`** (`version: 0.1.1`) and mirrored in the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`).
+- The server version is declared in **`server.json`** (`version: 0.1.1`) and mirrored in the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `gemini-extension.json`, `.antigravity-plugin/plugin.json`).
 - On every push to `main` that changes `server.json`, the [`publish-mcp.yml`](.github/workflows/publish-mcp.yml) workflow publishes the new version to the **official Model Context Protocol Registry** (authenticating via GitHub OIDC).
 - Keep the version in `server.json` and the plugin manifests aligned before publishing, so the repository and the registry stay in sync.
 - Releases are driven by `server.json` changes on `main` — the repository does not cut GitHub Releases or version tags per version.

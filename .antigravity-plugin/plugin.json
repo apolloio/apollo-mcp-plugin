@@ -1,0 +1,15 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "apollo",
+  "displayName": "Apollo.io",
+  "version": "0.1.1",
+  "description": "Prospect, enrich leads, load outreach sequences, and query sales analytics with Apollo.io through the hosted Apollo MCP server.",
+  "author": {
+    "name": "Apollo.io",
+    "url": "https://www.apollo.io/"
+  },
+  "homepage": "https://www.apollo.io/",
+  "repository": "https://github.com/apolloio/apollo-mcp-plugin",
+  "license": "MIT",
+  "keywords": ["apollo", "sales", "prospecting", "icp", "enrichment", "sequences", "analytics", "mcp"]
+}
