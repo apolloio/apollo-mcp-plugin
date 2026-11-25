@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.apolloio%2Fapollo--mcp-6E56CF.svg)](https://registry.modelcontextprotocol.io/)
-[![Version](https://img.shields.io/badge/version-0.1.1-informational.svg)](server.json)
+[![Version](https://img.shields.io/badge/version-0.1.2-informational.svg)](server.json)
 
 **Provider:** Official, first-party server built and maintained by [Apollo.io](https://www.apollo.io/).
 
@@ -420,7 +420,7 @@ This server is published and **active** in the official [Model Context Protocol 
 | Field | Value |
 |---|---|
 | Registry name | `io.github.apolloio/apollo-mcp` |
-| Version | `0.1.1` |
+| Version | `0.1.2` |
 | Transport | Streamable HTTP |
 | Endpoint | `https://mcp.apollo.io/mcp` |
 
@@ -462,7 +462,7 @@ Contributions are welcome via pull requests. Please keep version metadata consis
 
 ## Versioning and Releases
 
-- The server version is declared in **`server.json`** (`version: 0.1.1`) and mirrored in the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `gemini-extension.json`, `.antigravity-plugin/plugin.json`).
+- The server version is declared in **`server.json`** (`version: 0.1.2`) and mirrored in the plugin manifests (`.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `gemini-extension.json`, `.antigravity-plugin/plugin.json`).
 - On every push to `main` that changes `server.json`, the [`publish-mcp.yml`](.github/workflows/publish-mcp.yml) workflow publishes the new version to the **official Model Context Protocol Registry** (authenticating via GitHub OIDC).
 - Keep the version in `server.json` and the plugin manifests aligned before publishing, so the repository and the registry stay in sync.
 - Releases are driven by `server.json` changes on `main` — the repository does not cut GitHub Releases or version tags per version.

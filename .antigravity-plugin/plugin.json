@@ -2,7 +2,7 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "apollo",
   "displayName": "Apollo.io",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Prospect, enrich leads, load outreach sequences, and query sales analytics with Apollo.io through the hosted Apollo MCP server.",
   "author": {
     "name": "Apollo.io",
