@@ -136,6 +136,8 @@ Create a `.vscode/mcp.json` file in your workspace:
 
 ## Install in Cursor
 
+### Option A — configuration file
+
 Add the remote Streamable HTTP endpoint to your Cursor MCP configuration (for example, `~/.cursor/mcp.json`, or the project-level `.cursor/mcp.json`):
 
 ```json
@@ -155,7 +157,17 @@ Then:
 2. Authenticate with your Apollo.io account when prompted.
 3. Approve the requested access, then use Apollo tools from the agent.
 
-> This repository also includes a Cursor plugin manifest (`.cursor-plugin/plugin.json`) that references the same remote endpoint (`.mcp.json`), so no local package needs to run.
+### Option B — one-click install link
+
+Open this link on a machine with Cursor installed; it adds the `apollo` server to your Cursor MCP configuration:
+
+**[Install Apollo MCP in Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=apollo&config=eyJ1cmwiOiJodHRwczovL21jcC5hcG9sbG8uaW8vbWNwIn0=)**
+
+The link carries only the server URL (`https://mcp.apollo.io/mcp`, base64-encoded). Authenticate with Apollo.io when prompted.
+
+### Option C — Cursor marketplace plugin
+
+Apollo is listed in the Cursor marketplace: <https://cursor.com/marketplace/apollo-io>. The plugin manifest (`.cursor-plugin/plugin.json`) points at the same remote endpoint (`.mcp.json`) and ships the workflow skills from `skills/`: `prospect`, `enrich-lead`, `sequence-load`, `analytics` and `gtm-strategist`. In Cursor they appear in the **Agent Decides** section and can be invoked with `/prospect`, `/enrich-lead`, and so on.
 
 ---
 
@@ -427,7 +439,7 @@ Repository layout:
 | `.mcp.json` | Remote MCP server definition (`apollo` → `https://mcp.apollo.io/mcp`). |
 | `server.json` | Official MCP Registry metadata (name, version, transport, endpoint). |
 | `.claude-plugin/` | Claude Code / Cowork plugin and marketplace manifests. |
-| `.cursor-plugin/` | Cursor plugin manifest. |
+| `.cursor-plugin/` | Cursor plugin manifest, declares `./skills` so Cursor loads the workflow skills. |
 | `gemini-extension.json` | Gemini CLI extension manifest. |
 | `.antigravity-plugin/`, `mcp_config.json` | Antigravity plugin manifest and its remote MCP server definition. |
 | `glama.json` | Glama MCP directory metadata. |
