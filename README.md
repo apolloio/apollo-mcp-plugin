@@ -8,7 +8,7 @@
 
 **Provider:** Official, first-party server built and maintained by [Apollo.io](https://www.apollo.io/).
 
-Bring Apollo.io prospecting, enrichment, and outreach directly into your favorite MCP-compatible AI application — GitHub Copilot, Visual Studio Code, Cursor, Claude Code, Claude Desktop, Claude Cowork, Gemini CLI, and Antigravity CLI.
+Bring Apollo.io prospecting, enrichment, and outreach directly into your favorite MCP-compatible AI application — GitHub Copilot, Visual Studio Code, Cursor, Claude Code, Claude Desktop, Claude Cowork, Gemini CLI, Antigravity CLI, and Codex CLI.
 
 - **Apollo.io:** <https://www.apollo.io/>
 - **Model Context Protocol:** <https://modelcontextprotocol.io/>
@@ -27,6 +27,7 @@ Bring Apollo.io prospecting, enrichment, and outreach directly into your favorit
 - [Install in Claude Desktop or Claude Cowork](#install-in-claude-desktop-or-claude-cowork)
 - [Install in Gemini CLI](#install-in-gemini-cli)
 - [Install in Antigravity CLI](#install-in-antigravity-cli)
+- [Install in Codex CLI](#install-in-codex-cli)
 - [Generic MCP Client Configuration](#generic-mcp-client-configuration)
 - [Authentication and Authorization](#authentication-and-authorization)
 - [Usage Examples](#usage-examples)
@@ -88,6 +89,7 @@ The following capabilities are confirmed by the server tools and skills in this 
   - Cursor
   - Claude Code
   - Claude Desktop / Claude Cowork
+  - Codex CLI
   - Gemini CLI
   - Antigravity CLI
   - Other MCP clients (see [Generic MCP Client Configuration](#generic-mcp-client-configuration))
@@ -249,6 +251,27 @@ Then:
 3. Complete Apollo.io authentication in the browser window that opens, and approve the requested access.
 
 The plugin is defined by `.antigravity-plugin/plugin.json` and `mcp_config.json`, which point at the same remote endpoint.
+
+---
+
+## Install in Codex CLI
+
+Codex CLI connects to remote MCP servers over Streamable HTTP and signs in with OAuth. Add the Apollo server to `~/.codex/config.toml` (or to `.codex/config.toml` inside a trusted project):
+
+```toml
+[mcp_servers.apollo]
+url = "https://mcp.apollo.io/mcp"
+```
+
+Then sign in with your Apollo.io account:
+
+```bash
+codex mcp login apollo
+```
+
+A browser window opens for Apollo.io authentication. Approve the requested access, return to Codex, and the Apollo tools are available in the next turn. To confirm the server is registered, run `codex mcp list`.
+
+The `/apollo:*` workflow skills in this repository are packaged for Claude Code, Claude Cowork and Cursor; Codex does not load them today. The same workflows run in Codex as natural-language prompts, see [Usage Examples](#usage-examples).
 
 ---
 
